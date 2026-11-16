@@ -1,6 +1,8 @@
 import { appendFileSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { tmpdir } from "node:os";
 
-const control = "/tmp/pi-rt-fake.json";
+const control = path.join(tmpdir(), "pi-rt-fake.json");
 
 function settings() {
   try {

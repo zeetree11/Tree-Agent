@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import { randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { DB_PATH, DATA_DIR, PI_CLI, ROOT, ensureDirs, loadConfig, piArgs, piConfigPath, piEnv } from "./config.ts";
 import { Store } from "./db.ts";
 import { MemoryStore } from "./memory.ts";
@@ -23,6 +24,7 @@ import { NoteStore } from "./fanout.ts";
 import { FileLockStore } from "./file-lock.ts";
 import { KnowledgeStore, formatHits } from "./knowledge.ts";
 import { ProposalStore } from "./proposal.ts";
+import { buildDigest, digestDue, formatDigest } from "./digest.ts";
 import { violations } from "./preference.ts";
 import { resolvePreferences } from "./preference.ts";
 import { FeedbackStore, appendCases, isComplaint } from "./feedback.ts";
@@ -923,6 +925,55 @@ async function cmdFeed(args: string[]): Promise<number> {
   return 0;
 }
 
+
+/**
+ * Daily digest push.
+ *
+ * Lives next to the reminder loops because it has the same shape: a timer, a delivery function and
+ * a "did this already happen" guard. The guard is a file rather than a table on purpose — a missing
+ * table must not stop the digest, and a duplicate digest is worse than a missed one.
+ */
+function startDailyDigest(options: {
+  channel: "feishu" | "qq";
+  send: (chatId: string, text: string) => Promise<void>;
+  log: (message: string) => void;
+}): () => void {
+  const hour = Number(process.env.PI_RT_DIGEST_HOUR ?? 22);
+  if (hour < 0 || hour > 23) return () => {};
+  const stampFile = path.join(DATA_DIR, "digest-last.txt");
+
+  const tick = async () => {
+    try {
+      let lastSentDay: string | null = null;
+      try {
+        lastSentDay = readFileSync(stampFile, "utf8").trim() || null;
+      } catch {
+        lastSentDay = null;
+      }
+      if (!digestDue({ now: new Date(), hour, lastSentDay })) return;
+
+      const db = new DatabaseSync(DB_PATH, { readOnly: true });
+      const row = db
+        .prepare("SELECT thread FROM conversation_events WHERE thread LIKE ? ORDER BY id DESC LIMIT 1")
+        .get(`${options.channel}:%`) as { thread?: string } | undefined;
+      const digest = buildDigest(db, { days: 1 });
+      db.close();
+
+      if (!row?.thread) return;
+      const chatId = row.thread.slice(options.channel.length + 1);
+      await options.send(chatId, formatDigest(digest));
+      writeFileSync(stampFile, new Date().toISOString().slice(0, 10), "utf8");
+      options.log(`日报已发送到 ${chatId}`);
+    } catch (error) {
+      options.log(`日报发送失败：${(error as Error).message}`);
+    }
+  };
+
+  const timer = setInterval(() => void tick(), 5 * 60_000);
+  void tick();
+  return () => clearInterval(timer);
+}
+
 async function cmdServe(args: string[]): Promise<number> {
   const channel = flagValue(args, "--channel") ?? "telegram";
   const portFlag = flagValue(args, "--port");
@@ -1419,6 +1470,11 @@ async function cmdServe(args: string[]): Promise<number> {
     controller.signal.addEventListener("abort", () => clearInterval(stopFeishuReminders));
     reminderStore.pending().length > 0 &&
       console.log(`待触发提醒 ${reminderStore.pending().length} 条`);
+    startDailyDigest({
+      channel: "feishu",
+      send: (chatId, text) => sender!.send(chatId, text),
+      log: (message) => dim(message),
+    });
     await sender!.serve((message) =>
       handler(
         message,

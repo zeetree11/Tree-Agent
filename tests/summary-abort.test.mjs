@@ -6,7 +6,7 @@ const dir = mkdtempSync(path.join(tmpdir(), "pi-rt-abort-"));
 const log = path.join(dir, "prompts.log");
 process.env.PI_RT_DATA_DIR = dir;
 process.env.PI_RT_PI_BIN = path.resolve("tests/fixtures/fake-pi.mjs");
-writeFileSync("/tmp/pi-rt-fake.json", JSON.stringify({ mode: "delay-settle", delay: 1500, log }));
+writeFileSync(path.join(tmpdir(), "pi-rt-fake.json"), JSON.stringify({ mode: "delay-settle", delay: 1500, log }));
 
 const { Store } = await import("../src/db.ts");
 const { loadConfig } = await import("../src/config.ts");

@@ -1,4 +1,5 @@
 import { writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { PiRpc } from "../src/rpc.ts";
 
@@ -10,7 +11,7 @@ const check = (name, ok, extra = "") => {
 };
 
 const fake = path.resolve("tests/fixtures/fake-pi.mjs");
-const control = "/tmp/pi-rt-fake.json";
+const control = path.join(tmpdir(), "pi-rt-fake.json");
 const unhandled = [];
 process.on("unhandledRejection", (error) => unhandled.push(error));
 
