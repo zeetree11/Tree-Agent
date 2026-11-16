@@ -24,7 +24,7 @@ import { NoteStore } from "./fanout.ts";
 import { FileLockStore } from "./file-lock.ts";
 import { KnowledgeStore, formatHits } from "./knowledge.ts";
 import { ProposalStore } from "./proposal.ts";
-import { buildDigest, digestDue, formatDigest } from "./digest.ts";
+import { buildDigest as buildDailyDigest, digestDue, formatDigest } from "./digest.ts";
 import { violations } from "./preference.ts";
 import { resolvePreferences } from "./preference.ts";
 import { FeedbackStore, appendCases, isComplaint } from "./feedback.ts";
@@ -956,7 +956,7 @@ function startDailyDigest(options: {
       const row = db
         .prepare("SELECT thread FROM conversation_events WHERE thread LIKE ? ORDER BY id DESC LIMIT 1")
         .get(`${options.channel}:%`) as { thread?: string } | undefined;
-      const digest = buildDigest(db, { days: 1 });
+      const digest = buildDailyDigest(db, { days: 1 });
       db.close();
 
       if (!row?.thread) return;
