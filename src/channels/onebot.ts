@@ -60,7 +60,18 @@ export function parseOneBotEvent(payload: any, options: { botUin?: string } = {}
     .join("")
     .replace(/\s+/g, " ")
     .trim();
-  if (!text) return null;
+  // A file or image arrives as its own segment, often with no text at all. Dropping those here
+  // was why a PDF "never arrived": nothing downstream could know it had been sent.
+  const attachments = segments
+    .filter((segment) => segment.type === "file" || segment.type === "image" || segment.type === "record")
+    .map((segment) => ({
+      kind: segment.type === "image" ? ("image" as const) : ("file" as const),
+      id: String(segment.data?.file_id ?? segment.data?.file ?? ""),
+      url: segment.data?.url ? String(segment.data.url) : undefined,
+      name: segment.data?.name ?? segment.data?.file ?? undefined,
+    }))
+    .filter((item) => item.id || item.url);
+  if (!text && attachments.length === 0) return null;
 
   const mentioned = segments.some(
     (segment) => segment.type === "at" && (options.botUin ? String(segment.data?.qq) === options.botUin : true),
@@ -85,6 +96,7 @@ export function parseOneBotEvent(payload: any, options: { botUin?: string } = {}
     messageId: String(payload.message_id ?? ""),
     nickname: payload.sender?.card || payload.sender?.nickname || undefined,
     text,
+    attachments,
     addressed: isGroup ? mentioned : true,
     mentions,
   };
@@ -104,6 +116,7 @@ export function oneBotToIncoming(message: OneBotMessage) {
     externalId: message.userId,
     displayName: message.nickname ?? message.userId,
     text: message.text,
+    attachments: message.attachments,
     messageId: message.messageId,
     addressed: message.addressed,
     mentions: message.mentions,
@@ -172,6 +185,36 @@ export class OneBotClient {
     const token = this.options.httpToken ?? this.options.accessToken;
     if (token) headers.authorization = `Bearer ${token}`;
     return headers;
+  }
+
+  /**
+   * Download an inbound attachment.
+   *
+   * OneBot does not put bytes in the event: a file segment carries an id, and the bytes come from a
+   * second call. Implementations differ in what that call returns — a URL, a base64 blob, or a path
+   * on the protocol side — so all three are accepted instead of assuming one.
+   */
+  async fetchAttachment(kind: "file" | "image", data: { id?: string; url?: string }): Promise<Buffer> {
+    if (data.url && /^https?:\/\//i.test(data.url)) {
+      const direct = await fetch(data.url);
+      if (direct.ok) return Buffer.from(await direct.arrayBuffer());
+    }
+    const endpoint = kind === "image" ? "get_image" : "get_file";
+    const body = kind === "image" ? { file: data.id } : { file_id: data.id };
+    const response = await fetch(`${this.options.httpUrl.replace(/\/$/, "")}/${endpoint}`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) throw new Error(`onebot ${endpoint} ${response.status}`);
+    const payload: any = await response.json();
+    const info = payload?.data ?? {};
+    if (typeof info.base64 === "string" && info.base64.length > 0) return Buffer.from(info.base64, "base64");
+    const url = typeof info.url === "string" ? info.url : typeof info.file === "string" && /^https?:/i.test(info.file) ? info.file : "";
+    if (!url) throw new Error(`onebot ${endpoint} 没有返回可下载地址`);
+    const download = await fetch(url);
+    if (!download.ok) throw new Error(`附件下载失败 ${download.status}`);
+    return Buffer.from(await download.arrayBuffer());
   }
 
   private async post(endpoint: string, body: Record<string, unknown>): Promise<void> {

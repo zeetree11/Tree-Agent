@@ -25,6 +25,7 @@ import { FileLockStore } from "./file-lock.ts";
 import { KnowledgeStore, formatHits } from "./knowledge.ts";
 import { ProposalStore } from "./proposal.ts";
 import { buildDigest as buildDailyDigest, digestDue, formatDigest } from "./digest.ts";
+import { attachmentNote, saveAttachment } from "./inbound.ts";
 import { violations } from "./preference.ts";
 import { resolvePreferences } from "./preference.ts";
 import { FeedbackStore, appendCases, isComplaint } from "./feedback.ts";
@@ -1370,9 +1371,37 @@ async function cmdServe(args: string[]): Promise<number> {
         console.log(`待触发提醒 ${reminderStore.pending().length} 条`);
       controller.signal.addEventListener("abort", () => clearInterval(stopReminders));
       await client.run(
-        (message) =>
-          handler(oneBotToIncoming(message) as Incoming, async (_chatId, text) => {
-            const incoming = oneBotToIncoming(message);
+        async (message) => {
+          const incoming = oneBotToIncoming(message) as Incoming & {
+            attachments?: Array<{ kind: "file" | "image"; id?: string; url?: string; name?: string }>;
+          };
+          if (incoming.attachments && incoming.attachments.length > 0) {
+            const saved: Array<{ path: string; kind: "file" | "image" }> = [];
+            const failed: string[] = [];
+            for (const item of incoming.attachments) {
+              try {
+                const buffer = await client.fetchAttachment(item.kind, { id: item.id, url: item.url });
+                const result = saveAttachment({
+                  workspace: cfg.workspace,
+                  displayAs: "/workspace/inbox",
+                  name: item.name,
+                  kind: item.kind,
+                  buffer,
+                });
+                if (result.ok) saved.push({ path: result.path, kind: item.kind });
+                else failed.push(`${item.name ?? item.id ?? "附件"}：${result.reason}`);
+              } catch (error) {
+                failed.push(`${item.name ?? item.id ?? "附件"}：${(error as Error).message}`);
+              }
+            }
+            const note = attachmentNote(saved, failed);
+            if (note) {
+              incoming.text = `${note}\n\n${incoming.text}`.trim();
+              store.appendEvent("", "attachment_received", { saved: saved.map((item) => item.path), failed });
+              console.log(`收到附件 ${saved.length} 个，失败 ${failed.length} 个`);
+            }
+          }
+          return handler(incoming, async (_chatId, text) => {
             // Length is a product decision, not a model preference: SOUL.md says "短句" and the
             // model still wrote 200-character answers. The cap is mechanical, and it steps aside
             // when the user actually asked for detail.

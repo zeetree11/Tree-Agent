@@ -36,6 +36,7 @@ export type IngestResult = {
   speaker: string;
   isOwner: boolean;
   duplicate?: boolean;
+  attachments?: InboundAttachment[];
 };
 
 /**
@@ -45,6 +46,8 @@ export type IngestResult = {
  * because memory evidence must survive a failed reply. The thread is namespaced by channel
  * so the same person on two channels does not share a conversation history by accident.
  */
+import type { InboundAttachment } from "./inbound.ts";
+
 export function ingest(deps: GatewayDeps, message: Incoming): IngestResult {
   const { store, members } = deps;
   const thread = `${message.channel}:${message.chatId}`;

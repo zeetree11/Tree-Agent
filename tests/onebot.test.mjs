@@ -64,7 +64,10 @@ const group = (overrides = {}) => ({
 // 6) non-message events and empty text are ignored
 {
   check("heartbeat ignored", parseOneBotEvent({ post_type: "meta_event", meta_event_type: "heartbeat" }) === null);
-  check("image-only ignored", parseOneBotEvent(group({ message: [{ type: "image", data: { file: "a.jpg" } }] })) === null);
+  const imageOnly = parseOneBotEvent(group({ message: [{ type: "image", data: { file: "a.jpg", url: "https://x/a.jpg" } }] }));
+  check("image-only is kept as an attachment", imageOnly?.attachments?.length === 1 && imageOnly.text === "", JSON.stringify(imageOnly?.attachments));
+  const fileOnly = parseOneBotEvent(group({ message: [{ type: "file", data: { file_id: "f1", name: "讲义.pdf" } }] }));
+  check("file-only is kept as an attachment", fileOnly?.attachments?.[0]?.name === "讲义.pdf", JSON.stringify(fileOnly?.attachments));
 }
 
 // 7) CQ-code string form is understood
