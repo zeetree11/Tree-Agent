@@ -104,7 +104,7 @@ console.log(`\n选定 minScore = ${best.minScore}（dev 上误召回为 0 且 hi
 const held = evaluate(holdout, best.minScore);
 const [lo, hi] = wilson(held.hits, held.answerable);
 console.log(`\nholdout 报告（只跑这一次）：`);
-console.log(`  hit@5        ${held.hits}/${held.answerable} = ${(held.hitRate ?? held.hits / held.answerable * 100).toFixed?.(1) ?? ""}${((held.hits / held.answerable) * 100).toFixed(1)}%   95% CI [${(lo * 100).toFixed(1)}%, ${(hi * 100).toFixed(1)}%]`);
+console.log(`  hit@5        ${held.hits}/${held.answerable} = ${((held.hits / held.answerable) * 100).toFixed(1)}%   95% CI [${(lo * 100).toFixed(1)}%, ${(hi * 100).toFixed(1)}%]`);
 console.log(`  recall@5     ${(held.metrics.recallAtK * 100).toFixed(1)}%`);
 console.log(`  precision@5  ${(held.metrics.precisionAtK * 100).toFixed(1)}%`);
 console.log(`  MRR          ${held.metrics.mrr.toFixed(2)}`);
