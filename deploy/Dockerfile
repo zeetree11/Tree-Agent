@@ -20,6 +20,11 @@ FROM node:24-bookworm-slim
 RUN useradd -m -u 10001 agent
 
 WORKDIR /app
+# poppler-utils 提供 pdftotext：用户发来的 PDF 需要先转成文本，模型才有东西可读
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends poppler-utils \
+ && rm -rf /var/lib/apt/lists/*
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 COPY src ./src
