@@ -21,6 +21,7 @@ import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { MemoryStore } from "../../src/memory.ts";
+import { bm25, rrf } from "../../src/hybrid.ts";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -36,6 +37,7 @@ const OUT = flag("out", "/tmp/locomo-result.json");
 const AGENTIC = args.includes("--agentic");
 const ONLY_CATEGORY = Number(flag("category", "0")) || 0;
 const STRICT_SPAN = args.includes("--strict-span");
+const HYBRID = args.includes("--hybrid");
 const BASE = process.env.MEM0_EMBED_BASE_URL;
 const EMB_KEY = process.env.MEM0_EMBED_API_KEY;
 const EMB_MODEL = process.env.MEM0_EMBED_MODEL ?? "BAAI/bge-m3";
@@ -176,6 +178,8 @@ for (const key of sessionKeys) {
 }
 console.log(`样本 ${SAMPLE}（${sample.sample_id}）：${turns.length} 轮对话，${sample.qa.length} 个问题`);
 
+const turnDocs = turns.map((turn) => ({ key: `turn.${turn.id}`.toLowerCase(), text: turn.text }));
+
 // ── 建库 ────────────────────────────────────────────────────────────────────
 const dir = mkdtempSync(path.join(tmpdir(), "locomo-"));
 const store = new MemoryStore(dir, "locomo");
@@ -224,6 +228,19 @@ for (const [index, qa] of questions.entries()) {
     }
     hits = [...merged.values()].sort((a, b) => b.score - a.score).slice(0, K);
     recordsSubQueries.push({ index, subQueries });
+  } else if (HYBRID) {
+    const questionVector = (await embedBatch([qa.question]))[0];
+    const vectorHits = store.similaritySearch(questionVector, { limit: K * 2, model: EMB_MODEL, minScore: 0.2 });
+    const lexicalHits = bm25(qa.question, turnDocs).slice(0, K * 2);
+    const fused = rrf([vectorHits.map((hit) => hit.row.key), lexicalHits.map((hit) => hit.key)]);
+    const byKey = new Map(vectorHits.map((hit) => [hit.row.key, hit]));
+    for (const lexical of lexicalHits) {
+      if (!byKey.has(lexical.key)) {
+        // 只被 BM25 命中的轮次没有向量分数，用原文补一个最小 row 供格式化
+        byKey.set(lexical.key, { row: { key: lexical.key, content: lexical.text, importance: 3 }, score: 0 });
+      }
+    }
+    hits = fused.slice(0, K).map((item) => byKey.get(item.key)).filter(Boolean);
   } else {
     const questionVector = (await embedBatch([qa.question]))[0];
     hits = store.similaritySearch(questionVector, { limit: K, model: EMB_MODEL, minScore: 0.2 });
