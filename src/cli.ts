@@ -1422,7 +1422,8 @@ async function cmdServe(args: string[]): Promise<number> {
             }
             await client.sendFile(target, base64, path.basename(filePath));
             if (caption?.trim()) await client.send(target, caption);
-          }),
+          });
+        },
         controller.signal,
       );
       return 0;
