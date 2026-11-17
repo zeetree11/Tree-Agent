@@ -21,7 +21,8 @@ RUN useradd -m -u 10001 agent
 
 WORKDIR /app
 # poppler-utils 提供 pdftotext：用户发来的 PDF 需要先转成文本，模型才有东西可读
-RUN apt-get update \
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources \
+ && apt-get update \
  && apt-get install -y --no-install-recommends poppler-utils \
  && rm -rf /var/lib/apt/lists/*
 
