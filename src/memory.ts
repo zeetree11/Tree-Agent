@@ -125,6 +125,21 @@ export function subjectOf(targetType: TargetType, targetName: string | null, own
  *    (`superseded` / `invalidated` / `contested`) and is never deleted.
  * 3. The model proposes an action; this class decides the real one against DB state.
  */
+/**
+ * Memory scope policy.
+ *
+ * Preferences and facts describe the person, so they must hold everywhere: "I prefer C++" said in
+ * one group is still true in another. Events are situational ("I'm going to Chengdu next week"),
+ * and copying those across every channel is both noisy and a privacy leak between groups.
+ *
+ * One function, used on write; the injection side already filters `thread IS NULL OR thread = ?`,
+ * so writing `null` is what makes a memory global.
+ */
+export function scopeThreadFor(category: string, thread?: string | null): string | null {
+  if (category === "preference" || category === "fact") return null;
+  return thread ?? null;
+}
+
 export class MemoryStore {
   private readonly db: DatabaseSync;
   private readonly dir: string;
@@ -138,6 +153,16 @@ export class MemoryStore {
     this.db = new DatabaseSync(path.join(dataDir, "runtime.db"));
     this.db.exec("PRAGMA journal_mode = WAL;");
     this.db.exec("PRAGMA busy_timeout = 5000;");
+    // One-time sweep: rows written before the scope policy existed. Idempotent — it only touches
+    // rows that still carry a thread, so re-running costs nothing.
+    try {
+      this.db
+        .prepare("UPDATE memories SET thread = NULL WHERE thread IS NOT NULL AND category IN ('preference','fact')")
+        .run();
+    } catch {
+      /* older schema: ignore */
+    }
+
     this.migrateLegacyKinds();
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS memories (
@@ -424,7 +449,7 @@ export class MemoryStore {
         status,
         note || null,
         write.sourceTaskId ?? null,
-        write.thread ?? null,
+        scopeThreadFor(category, write.thread ?? null),
         ts,
         ts,
       );
