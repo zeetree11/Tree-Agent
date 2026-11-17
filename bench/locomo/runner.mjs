@@ -33,6 +33,7 @@ const SAMPLE = Number(flag("sample", "0"));
 const LIMIT = Number(flag("limit", "40"));
 const K = Number(flag("k", "15"));
 const OUT = flag("out", "/tmp/locomo-result.json");
+const AGENTIC = args.includes("--agentic");
 const BASE = process.env.MEM0_EMBED_BASE_URL;
 const EMB_KEY = process.env.MEM0_EMBED_API_KEY;
 const EMB_MODEL = process.env.MEM0_EMBED_MODEL ?? "BAAI/bge-m3";
@@ -80,6 +81,49 @@ async function embedBatch(texts) {
   });
   if (!response.ok) throw new Error(`embedding ${response.status}: ${(await response.text()).slice(0, 160)}`);
   return (await response.json()).data.map((item) => new Float32Array(item.embedding));
+}
+
+/**
+ * Split a question into sub-queries.
+ *
+ * Why this exists: multi-hop questions ("Who did X meet before moving to Y?") need two facts that
+ * rarely sit in the same retrieved window. One query retrieves one region of the dialogue; two
+ * queries retrieve two, and the union is what the answer needs.
+ *
+ * A single cheap model call, capped at 3 sub-queries — decomposition is a means, not a loop.
+ */
+async function decompose(question) {
+  const response = await fetch(`${LLM_BASE.replace(/\/$/, "")}/chat/completions`, {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${LLM_KEY}` },
+    body: JSON.stringify({
+      model: LLM_MODEL,
+      temperature: 0,
+      max_tokens: 120,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Split the question into 1-3 short retrieval queries, each targeting one fact needed. " +
+            "Return ONLY JSON: {\"queries\":[\"...\"]}. If it needs a single fact, return one query.",
+        },
+        { role: "user", content: question },
+      ],
+    }),
+  });
+  if (!response.ok) return [question];
+  try {
+    const payload = await response.json();
+    const text = String(payload.choices?.[0]?.message?.content ?? "");
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return [question];
+    const parsed = JSON.parse(match[0]);
+    const list = Array.isArray(parsed?.queries) ? parsed.queries : [];
+    const cleaned = list.map((item) => String(item).trim()).filter(Boolean).slice(0, 3);
+    return cleaned.length > 0 ? cleaned : [question];
+  } catch {
+    return [question];
+  }
 }
 
 async function ask(question, context) {
@@ -152,11 +196,30 @@ console.log(`向量入库完成：${turns.length} 条`);
 const questions = sample.qa.slice(0, LIMIT);
 const perCategory = new Map();
 const records = [];
+const recordsSubQueries = [];
 
 for (const [index, qa] of questions.entries()) {
   const category = Number(qa.category);
-  const questionVector = (await embedBatch([qa.question]))[0];
-  const hits = store.similaritySearch(questionVector, { limit: K, model: EMB_MODEL, minScore: 0.2 });
+  let hits;
+  if (AGENTIC) {
+    // 多跳：拆成子查询，各取 K/2，再按去重后的并集排序，总量控制在 2K
+    const subQueries = await decompose(qa.question);
+    const perQuery = Math.max(3, Math.ceil(K / 2));
+    const merged = new Map();
+    for (const subQuery of subQueries) {
+      const vector = (await embedBatch([subQuery]))[0];
+      for (const hit of store.similaritySearch(vector, { limit: perQuery, model: EMB_MODEL, minScore: 0.2 })) {
+        const key = hit.row.key;
+        const previous = merged.get(key);
+        if (!previous || hit.score > previous.score) merged.set(key, hit);
+      }
+    }
+    hits = [...merged.values()].sort((a, b) => b.score - a.score).slice(0, K * 2);
+    recordsSubQueries.push({ index, subQueries });
+  } else {
+    const questionVector = (await embedBatch([qa.question]))[0];
+    hits = store.similaritySearch(questionVector, { limit: K, model: EMB_MODEL, minScore: 0.2 });
+  }
   const context = hits.map((hit) => `[${hit.row.key.replace("turn.", "")}] ${hit.row.content}`).join("\n");
 
   // adversarial（category 5）：正确行为是拒绝回答
@@ -198,7 +261,7 @@ for (const category of [...perCategory.keys()].sort()) {
 console.log(`| **总体** | **${totalN}** | **${(totalSum / totalN).toFixed(3)}** |`);
 
 if (OUT) {
-  writeFileSync(OUT, `${JSON.stringify({ sample: SAMPLE, limit: LIMIT, k: K, perCategory: Object.fromEntries(perCategory), records }, null, 2)}\n`, "utf8");
+  writeFileSync(OUT, `${JSON.stringify({ sample: SAMPLE, limit: LIMIT, k: K, agentic: AGENTIC, perCategory: Object.fromEntries(perCategory), records, subQueries: recordsSubQueries }, null, 2)}\n`, "utf8");
   console.log(`\n明细写入 ${OUT}`);
 }
 
