@@ -34,6 +34,7 @@ const LIMIT = Number(flag("limit", "40"));
 const K = Number(flag("k", "15"));
 const OUT = flag("out", "/tmp/locomo-result.json");
 const AGENTIC = args.includes("--agentic");
+const ONLY_CATEGORY = Number(flag("category", "0")) || 0;
 const BASE = process.env.MEM0_EMBED_BASE_URL;
 const EMB_KEY = process.env.MEM0_EMBED_API_KEY;
 const EMB_MODEL = process.env.MEM0_EMBED_MODEL ?? "BAAI/bge-m3";
@@ -193,7 +194,9 @@ for (let start = 0; start < turns.length; start += BATCH) {
 console.log(`向量入库完成：${turns.length} 条`);
 
 // ── 抽样评测 ────────────────────────────────────────────────────────────────
-const questions = sample.qa.slice(0, LIMIT);
+const questions = sample.qa
+  .filter((item) => (ONLY_CATEGORY ? Number(item.category) === ONLY_CATEGORY : true))
+  .slice(0, LIMIT);
 const perCategory = new Map();
 const records = [];
 const recordsSubQueries = [];
@@ -203,7 +206,9 @@ for (const [index, qa] of questions.entries()) {
   let hits;
   if (AGENTIC) {
     // 多跳：拆成子查询，各取 K/2，再按去重后的并集排序，总量控制在 2K
-    const subQueries = await decompose(qa.question);
+    const decomposed = await decompose(qa.question);
+    // 原问题必须在内：子查询是对它的补充，不是替代
+    const subQueries = [qa.question, ...decomposed.filter((item) => item !== qa.question)];
     const perQuery = Math.max(3, Math.ceil(K / 2));
     const merged = new Map();
     for (const subQuery of subQueries) {
@@ -214,7 +219,7 @@ for (const [index, qa] of questions.entries()) {
         if (!previous || hit.score > previous.score) merged.set(key, hit);
       }
     }
-    hits = [...merged.values()].sort((a, b) => b.score - a.score).slice(0, K * 2);
+    hits = [...merged.values()].sort((a, b) => b.score - a.score).slice(0, K);
     recordsSubQueries.push({ index, subQueries });
   } else {
     const questionVector = (await embedBatch([qa.question]))[0];
