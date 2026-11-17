@@ -516,6 +516,26 @@ export class Store {
     return Number(result.changes) === 1;
   }
 
+  /**
+   * Was this exact message just recorded in this thread?
+   *
+   * Transport-level dedupe keys on message id, which fails when the platform resends the same text
+   * under a *new* id (QQ did exactly that: two ids, eleven seconds apart, same "奶龙"). This is the
+   * second layer: same thread, same speaker, same normalised text, inside a short window.
+   *
+   * The window is deliberately short. A person can genuinely repeat themselves; what we want to
+   * catch is the same message arriving twice because something re-delivered it.
+   */
+  hasRecentConversation(thread: string, speaker: string, text: string, windowSeconds = 20): boolean {
+    const since = new Date(Date.now() - windowSeconds * 1000).toISOString();
+    const row = this.db
+      .prepare(
+        "SELECT 1 FROM conversation_events WHERE thread = ? AND speaker = ? AND role = 'user' AND trim(text) = ? AND created_at >= ? LIMIT 1",
+      )
+      .get(thread, speaker, text.trim(), since);
+    return Boolean(row);
+  }
+
   conversationEvents(thread: string, limit = 200): ConversationEventRow[] {
     return this.db
       .prepare("SELECT * FROM conversation_events WHERE thread = ? ORDER BY id ASC LIMIT ?")

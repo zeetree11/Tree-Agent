@@ -54,6 +54,13 @@ export function ingest(deps: GatewayDeps, message: Incoming): IngestResult {
     return { thread, eventId: -1, speaker: message.displayName, isOwner: false, duplicate: true };
   }
 
+  // Second layer: the platform may resend the same text under a new message id. Message-id dedupe
+  // cannot see that, so compare content inside a short window (see Store.hasRecentConversation).
+  const windowSeconds = Number(process.env.PI_RT_DUP_WINDOW_S ?? 20);
+  if (windowSeconds > 0 && store.hasRecentConversation(thread, message.displayName, message.text, windowSeconds)) {
+    return { thread, eventId: -1, speaker: message.displayName, isOwner: false, duplicate: true };
+  }
+
   // Ownership is decided by configured name or id, not by "whoever spoke first". Feishu and
   // Telegram deliver their own display names, so an id list is the reliable fallback when the
   // profile name is not the owner's canonical name.
