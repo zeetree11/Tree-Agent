@@ -35,6 +35,7 @@ const K = Number(flag("k", "15"));
 const OUT = flag("out", "/tmp/locomo-result.json");
 const AGENTIC = args.includes("--agentic");
 const ONLY_CATEGORY = Number(flag("category", "0")) || 0;
+const STRICT_SPAN = args.includes("--strict-span");
 const BASE = process.env.MEM0_EMBED_BASE_URL;
 const EMB_KEY = process.env.MEM0_EMBED_API_KEY;
 const EMB_MODEL = process.env.MEM0_EMBED_MODEL ?? "BAAI/bge-m3";
@@ -141,7 +142,9 @@ async function ask(question, context) {
           content:
             "You answer questions about a long conversation using ONLY the provided excerpts. " +
             "If the excerpts do not contain the answer, reply exactly: NOT_MENTIONED. " +
-            "Answer as short as possible (a date, a name, or a few words).",
+            STRICT_SPAN
+              ? "Copy the answer verbatim from the excerpts: the exact words, no paraphrase, no added words. If the excerpts do not contain it, reply exactly NOT_MENTIONED."
+              : "Answer as short as possible (a date, a name, or a few words).",
         },
         { role: "user", content: `Excerpts:\n${context}\n\nQuestion: ${question}` },
       ],
