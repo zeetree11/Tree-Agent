@@ -32,9 +32,13 @@ function prng(seed) {
 
 const rnd = prng(20261117);
 const memories = [];
+// MemoryStore lowercases keys on write; every fixture key must follow the same rule, otherwise
+// the comparison fails for reasons that have nothing to do with retrieval quality.
+const K = (key) => String(key).toLowerCase();
 const add = (key, category, content) => {
-  if (memories.some((item) => item.key === key)) return;
-  memories.push({ key, category, content });
+  const normalized = K(key);
+  if (memories.some((item) => item.key === normalized)) return;
+  memories.push({ key: normalized, category, content });
 };
 
 const cities = ["成都", "杭州", "西安", "长沙", "厦门", "武汉", "重庆", "南京", "青岛", "昆明"];
@@ -84,7 +88,7 @@ for (let i = 0; i < 12; i += 1) {
 const queries = [];
 const addQuery = (q, expect, distractors = []) => {
   if (queries.some((item) => item.q === q)) return;
-  queries.push({ q, expect, distractors });
+  queries.push({ q, expect: expect.map(K), distractors: distractors.map(K) });
 };
 
 for (const project of projects) {

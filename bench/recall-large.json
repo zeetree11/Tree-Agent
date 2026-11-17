@@ -3,122 +3,122 @@
   "note": "确定性生成；锚点在问题里、答案不在问题里；同族记忆互为干扰项。holdout 只能用于报告，不能用于调参。",
   "memories": [
     {
-      "key": "project.Orion.db",
+      "key": "project.orion.db",
       "category": "fact",
       "content": "Orion 这个项目的存储选型是 SQLite"
     },
     {
-      "key": "project.Orion.budget",
+      "key": "project.orion.budget",
       "category": "fact",
       "content": "Orion 本季度预算 10 万，超出要重新审批"
     },
     {
-      "key": "project.Orion.deadline",
+      "key": "project.orion.deadline",
       "category": "event",
       "content": "Orion 计划 1 月底交付 v1.2"
     },
     {
-      "key": "project.Falcon.db",
+      "key": "project.falcon.db",
       "category": "fact",
       "content": "Falcon 这个项目的存储选型是 Postgres"
     },
     {
-      "key": "project.Falcon.budget",
+      "key": "project.falcon.budget",
       "category": "fact",
       "content": "Falcon 本季度预算 17 万，超出要重新审批"
     },
     {
-      "key": "project.Falcon.deadline",
+      "key": "project.falcon.deadline",
       "category": "event",
       "content": "Falcon 计划 2 月底交付 v2.2"
     },
     {
-      "key": "project.Eagle.db",
+      "key": "project.eagle.db",
       "category": "fact",
       "content": "Eagle 这个项目的存储选型是 MySQL"
     },
     {
-      "key": "project.Eagle.budget",
+      "key": "project.eagle.budget",
       "category": "fact",
       "content": "Eagle 本季度预算 24 万，超出要重新审批"
     },
     {
-      "key": "project.Eagle.deadline",
+      "key": "project.eagle.deadline",
       "category": "event",
       "content": "Eagle 计划 3 月底交付 v3.2"
     },
     {
-      "key": "project.Titan.db",
+      "key": "project.titan.db",
       "category": "fact",
       "content": "Titan 这个项目的存储选型是 Redis"
     },
     {
-      "key": "project.Titan.budget",
+      "key": "project.titan.budget",
       "category": "fact",
       "content": "Titan 本季度预算 31 万，超出要重新审批"
     },
     {
-      "key": "project.Titan.deadline",
+      "key": "project.titan.deadline",
       "category": "event",
       "content": "Titan 计划 4 月底交付 v4.2"
     },
     {
-      "key": "project.Atlas.db",
+      "key": "project.atlas.db",
       "category": "fact",
       "content": "Atlas 这个项目的存储选型是 DuckDB"
     },
     {
-      "key": "project.Atlas.budget",
+      "key": "project.atlas.budget",
       "category": "fact",
       "content": "Atlas 本季度预算 38 万，超出要重新审批"
     },
     {
-      "key": "project.Atlas.deadline",
+      "key": "project.atlas.deadline",
       "category": "event",
       "content": "Atlas 计划 5 月底交付 v5.2"
     },
     {
-      "key": "project.Nova.db",
+      "key": "project.nova.db",
       "category": "fact",
       "content": "Nova 这个项目的存储选型是 ClickHouse"
     },
     {
-      "key": "project.Nova.budget",
+      "key": "project.nova.budget",
       "category": "fact",
       "content": "Nova 本季度预算 45 万，超出要重新审批"
     },
     {
-      "key": "project.Nova.deadline",
+      "key": "project.nova.deadline",
       "category": "event",
       "content": "Nova 计划 6 月底交付 v6.2"
     },
     {
-      "key": "project.Vega.db",
+      "key": "project.vega.db",
       "category": "fact",
       "content": "Vega 这个项目的存储选型是 undefined"
     },
     {
-      "key": "project.Vega.budget",
+      "key": "project.vega.budget",
       "category": "fact",
       "content": "Vega 本季度预算 52 万，超出要重新审批"
     },
     {
-      "key": "project.Vega.deadline",
+      "key": "project.vega.deadline",
       "category": "event",
       "content": "Vega 计划 7 月底交付 v7.2"
     },
     {
-      "key": "project.Lyra.db",
+      "key": "project.lyra.db",
       "category": "fact",
       "content": "Lyra 这个项目的存储选型是 undefined"
     },
     {
-      "key": "project.Lyra.budget",
+      "key": "project.lyra.budget",
       "category": "fact",
       "content": "Lyra 本季度预算 59 万，超出要重新审批"
     },
     {
-      "key": "project.Lyra.deadline",
+      "key": "project.lyra.deadline",
       "category": "event",
       "content": "Lyra 计划 8 月底交付 v8.2"
     },
@@ -203,32 +203,32 @@
       "content": "找孙倩走邮件，不要走群"
     },
     {
-      "key": "infra.Docker",
+      "key": "infra.docker",
       "category": "fact",
       "content": "Docker 的配置放在 infra/docker/ 目录"
     },
     {
-      "key": "infra.Kubernetes",
+      "key": "infra.kubernetes",
       "category": "fact",
       "content": "Kubernetes 的配置放在 infra/kubernetes/ 目录"
     },
     {
-      "key": "infra.Terraform",
+      "key": "infra.terraform",
       "category": "fact",
       "content": "Terraform 的配置放在 infra/terraform/ 目录"
     },
     {
-      "key": "infra.GitHub Actions",
+      "key": "infra.github actions",
       "category": "fact",
       "content": "GitHub Actions 的配置放在 infra/github actions/ 目录"
     },
     {
-      "key": "infra.Nginx",
+      "key": "infra.nginx",
       "category": "fact",
       "content": "Nginx 的配置放在 infra/nginx/ 目录"
     },
     {
-      "key": "infra.Prometheus",
+      "key": "infra.prometheus",
       "category": "fact",
       "content": "Prometheus 的配置放在 infra/prometheus/ 目录"
     },
@@ -418,42 +418,42 @@
       "content": "第 10 次出差去昆明，当天回不来"
     },
     {
-      "key": "metric.Orion",
+      "key": "metric.orion",
       "category": "fact",
       "content": "Orion 的 p95 延迟目前是 120 毫秒"
     },
     {
-      "key": "metric.Falcon",
+      "key": "metric.falcon",
       "category": "fact",
       "content": "Falcon 的 p95 延迟目前是 157 毫秒"
     },
     {
-      "key": "metric.Eagle",
+      "key": "metric.eagle",
       "category": "fact",
       "content": "Eagle 的 p95 延迟目前是 194 毫秒"
     },
     {
-      "key": "metric.Titan",
+      "key": "metric.titan",
       "category": "fact",
       "content": "Titan 的 p95 延迟目前是 231 毫秒"
     },
     {
-      "key": "metric.Atlas",
+      "key": "metric.atlas",
       "category": "fact",
       "content": "Atlas 的 p95 延迟目前是 268 毫秒"
     },
     {
-      "key": "metric.Nova",
+      "key": "metric.nova",
       "category": "fact",
       "content": "Nova 的 p95 延迟目前是 305 毫秒"
     },
     {
-      "key": "metric.Vega",
+      "key": "metric.vega",
       "category": "fact",
       "content": "Vega 的 p95 延迟目前是 342 毫秒"
     },
     {
-      "key": "metric.Lyra",
+      "key": "metric.lyra",
       "category": "fact",
       "content": "Lyra 的 p95 延迟目前是 379 毫秒"
     },
@@ -522,328 +522,328 @@
     {
       "q": "Orion 这个项目的存储选型是什么",
       "expect": [
-        "project.Orion.db"
+        "project.orion.db"
       ],
       "distractors": [
-        "metric.Orion",
-        "project.Orion.budget"
+        "metric.orion",
+        "project.orion.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Orion 本季度预算多少",
       "expect": [
-        "project.Orion.budget"
+        "project.orion.budget"
       ],
       "distractors": [
-        "metric.Orion"
+        "metric.orion"
       ],
       "split": "dev"
     },
     {
       "q": "Orion 什么时候交付，交付哪个版本",
       "expect": [
-        "project.Orion.deadline"
+        "project.orion.deadline"
       ],
       "distractors": [
-        "project.Orion.db"
+        "project.orion.db"
       ],
       "split": "dev"
     },
     {
       "q": "Orion 现在的 p95 延迟是多少",
       "expect": [
-        "metric.Orion"
+        "metric.orion"
       ],
       "distractors": [
-        "project.Orion.budget"
+        "project.orion.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Falcon 这个项目的存储选型是什么",
       "expect": [
-        "project.Falcon.db"
+        "project.falcon.db"
       ],
       "distractors": [
-        "metric.Falcon",
-        "project.Falcon.budget"
+        "metric.falcon",
+        "project.falcon.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Falcon 本季度预算多少",
       "expect": [
-        "project.Falcon.budget"
+        "project.falcon.budget"
       ],
       "distractors": [
-        "metric.Falcon"
+        "metric.falcon"
       ],
       "split": "dev"
     },
     {
       "q": "Falcon 什么时候交付，交付哪个版本",
       "expect": [
-        "project.Falcon.deadline"
+        "project.falcon.deadline"
       ],
       "distractors": [
-        "project.Falcon.db"
+        "project.falcon.db"
       ],
       "split": "dev"
     },
     {
       "q": "Falcon 现在的 p95 延迟是多少",
       "expect": [
-        "metric.Falcon"
+        "metric.falcon"
       ],
       "distractors": [
-        "project.Falcon.budget"
+        "project.falcon.budget"
       ],
       "split": "holdout"
     },
     {
       "q": "Eagle 这个项目的存储选型是什么",
       "expect": [
-        "project.Eagle.db"
+        "project.eagle.db"
       ],
       "distractors": [
-        "metric.Eagle",
-        "project.Eagle.budget"
+        "metric.eagle",
+        "project.eagle.budget"
       ],
       "split": "holdout"
     },
     {
       "q": "Eagle 本季度预算多少",
       "expect": [
-        "project.Eagle.budget"
+        "project.eagle.budget"
       ],
       "distractors": [
-        "metric.Eagle"
+        "metric.eagle"
       ],
       "split": "holdout"
     },
     {
       "q": "Eagle 什么时候交付，交付哪个版本",
       "expect": [
-        "project.Eagle.deadline"
+        "project.eagle.deadline"
       ],
       "distractors": [
-        "project.Eagle.db"
+        "project.eagle.db"
       ],
       "split": "dev"
     },
     {
       "q": "Eagle 现在的 p95 延迟是多少",
       "expect": [
-        "metric.Eagle"
+        "metric.eagle"
       ],
       "distractors": [
-        "project.Eagle.budget"
+        "project.eagle.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Titan 这个项目的存储选型是什么",
       "expect": [
-        "project.Titan.db"
+        "project.titan.db"
       ],
       "distractors": [
-        "metric.Titan",
-        "project.Titan.budget"
+        "metric.titan",
+        "project.titan.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Titan 本季度预算多少",
       "expect": [
-        "project.Titan.budget"
+        "project.titan.budget"
       ],
       "distractors": [
-        "metric.Titan"
+        "metric.titan"
       ],
       "split": "dev"
     },
     {
       "q": "Titan 什么时候交付，交付哪个版本",
       "expect": [
-        "project.Titan.deadline"
+        "project.titan.deadline"
       ],
       "distractors": [
-        "project.Titan.db"
+        "project.titan.db"
       ],
       "split": "dev"
     },
     {
       "q": "Titan 现在的 p95 延迟是多少",
       "expect": [
-        "metric.Titan"
+        "metric.titan"
       ],
       "distractors": [
-        "project.Titan.budget"
+        "project.titan.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Atlas 这个项目的存储选型是什么",
       "expect": [
-        "project.Atlas.db"
+        "project.atlas.db"
       ],
       "distractors": [
-        "metric.Atlas",
-        "project.Atlas.budget"
+        "metric.atlas",
+        "project.atlas.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Atlas 本季度预算多少",
       "expect": [
-        "project.Atlas.budget"
+        "project.atlas.budget"
       ],
       "distractors": [
-        "metric.Atlas"
+        "metric.atlas"
       ],
       "split": "holdout"
     },
     {
       "q": "Atlas 什么时候交付，交付哪个版本",
       "expect": [
-        "project.Atlas.deadline"
+        "project.atlas.deadline"
       ],
       "distractors": [
-        "project.Atlas.db"
+        "project.atlas.db"
       ],
       "split": "holdout"
     },
     {
       "q": "Atlas 现在的 p95 延迟是多少",
       "expect": [
-        "metric.Atlas"
+        "metric.atlas"
       ],
       "distractors": [
-        "project.Atlas.budget"
+        "project.atlas.budget"
       ],
       "split": "holdout"
     },
     {
       "q": "Nova 这个项目的存储选型是什么",
       "expect": [
-        "project.Nova.db"
+        "project.nova.db"
       ],
       "distractors": [
-        "metric.Nova",
-        "project.Nova.budget"
+        "metric.nova",
+        "project.nova.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Nova 本季度预算多少",
       "expect": [
-        "project.Nova.budget"
+        "project.nova.budget"
       ],
       "distractors": [
-        "metric.Nova"
+        "metric.nova"
       ],
       "split": "dev"
     },
     {
       "q": "Nova 什么时候交付，交付哪个版本",
       "expect": [
-        "project.Nova.deadline"
+        "project.nova.deadline"
       ],
       "distractors": [
-        "project.Nova.db"
+        "project.nova.db"
       ],
       "split": "dev"
     },
     {
       "q": "Nova 现在的 p95 延迟是多少",
       "expect": [
-        "metric.Nova"
+        "metric.nova"
       ],
       "distractors": [
-        "project.Nova.budget"
+        "project.nova.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Vega 这个项目的存储选型是什么",
       "expect": [
-        "project.Vega.db"
+        "project.vega.db"
       ],
       "distractors": [
-        "metric.Vega",
-        "project.Vega.budget"
+        "metric.vega",
+        "project.vega.budget"
       ],
       "split": "dev"
     },
     {
       "q": "Vega 本季度预算多少",
       "expect": [
-        "project.Vega.budget"
+        "project.vega.budget"
       ],
       "distractors": [
-        "metric.Vega"
+        "metric.vega"
       ],
       "split": "dev"
     },
     {
       "q": "Vega 什么时候交付，交付哪个版本",
       "expect": [
-        "project.Vega.deadline"
+        "project.vega.deadline"
       ],
       "distractors": [
-        "project.Vega.db"
+        "project.vega.db"
       ],
       "split": "dev"
     },
     {
       "q": "Vega 现在的 p95 延迟是多少",
       "expect": [
-        "metric.Vega"
+        "metric.vega"
       ],
       "distractors": [
-        "project.Vega.budget"
+        "project.vega.budget"
       ],
       "split": "holdout"
     },
     {
       "q": "Lyra 这个项目的存储选型是什么",
       "expect": [
-        "project.Lyra.db"
+        "project.lyra.db"
       ],
       "distractors": [
-        "metric.Lyra",
-        "project.Lyra.budget"
+        "metric.lyra",
+        "project.lyra.budget"
       ],
       "split": "holdout"
     },
     {
       "q": "Lyra 本季度预算多少",
       "expect": [
-        "project.Lyra.budget"
+        "project.lyra.budget"
       ],
       "distractors": [
-        "metric.Lyra"
+        "metric.lyra"
       ],
       "split": "holdout"
     },
     {
       "q": "Lyra 什么时候交付，交付哪个版本",
       "expect": [
-        "project.Lyra.deadline"
+        "project.lyra.deadline"
       ],
       "distractors": [
-        "project.Lyra.db"
+        "project.lyra.db"
       ],
       "split": "dev"
     },
     {
       "q": "Lyra 现在的 p95 延迟是多少",
       "expect": [
-        "metric.Lyra"
+        "metric.lyra"
       ],
       "distractors": [
-        "project.Lyra.budget"
+        "project.lyra.budget"
       ],
       "split": "dev"
     },
@@ -1010,7 +1010,7 @@
     {
       "q": "Docker 的配置放在哪个目录",
       "expect": [
-        "infra.Docker"
+        "infra.docker"
       ],
       "distractors": [],
       "split": "holdout"
@@ -1018,7 +1018,7 @@
     {
       "q": "Kubernetes 的配置放在哪个目录",
       "expect": [
-        "infra.Kubernetes"
+        "infra.kubernetes"
       ],
       "distractors": [],
       "split": "holdout"
@@ -1026,7 +1026,7 @@
     {
       "q": "Terraform 的配置放在哪个目录",
       "expect": [
-        "infra.Terraform"
+        "infra.terraform"
       ],
       "distractors": [],
       "split": "dev"
@@ -1034,7 +1034,7 @@
     {
       "q": "GitHub Actions 的配置放在哪个目录",
       "expect": [
-        "infra.GitHub Actions"
+        "infra.github actions"
       ],
       "distractors": [],
       "split": "dev"
@@ -1042,7 +1042,7 @@
     {
       "q": "Nginx 的配置放在哪个目录",
       "expect": [
-        "infra.Nginx"
+        "infra.nginx"
       ],
       "distractors": [],
       "split": "dev"
@@ -1050,7 +1050,7 @@
     {
       "q": "Prometheus 的配置放在哪个目录",
       "expect": [
-        "infra.Prometheus"
+        "infra.prometheus"
       ],
       "distractors": [],
       "split": "dev"
