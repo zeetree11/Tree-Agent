@@ -1,0 +1,1615 @@
+{
+  "version": 2,
+  "note": "确定性生成；锚点在问题里、答案不在问题里；同族记忆互为干扰项。holdout 只能用于报告，不能用于调参。",
+  "memories": [
+    {
+      "key": "project.Orion.db",
+      "category": "fact",
+      "content": "Orion 这个项目的存储选型是 SQLite"
+    },
+    {
+      "key": "project.Orion.budget",
+      "category": "fact",
+      "content": "Orion 本季度预算 10 万，超出要重新审批"
+    },
+    {
+      "key": "project.Orion.deadline",
+      "category": "event",
+      "content": "Orion 计划 1 月底交付 v1.2"
+    },
+    {
+      "key": "project.Falcon.db",
+      "category": "fact",
+      "content": "Falcon 这个项目的存储选型是 Postgres"
+    },
+    {
+      "key": "project.Falcon.budget",
+      "category": "fact",
+      "content": "Falcon 本季度预算 17 万，超出要重新审批"
+    },
+    {
+      "key": "project.Falcon.deadline",
+      "category": "event",
+      "content": "Falcon 计划 2 月底交付 v2.2"
+    },
+    {
+      "key": "project.Eagle.db",
+      "category": "fact",
+      "content": "Eagle 这个项目的存储选型是 MySQL"
+    },
+    {
+      "key": "project.Eagle.budget",
+      "category": "fact",
+      "content": "Eagle 本季度预算 24 万，超出要重新审批"
+    },
+    {
+      "key": "project.Eagle.deadline",
+      "category": "event",
+      "content": "Eagle 计划 3 月底交付 v3.2"
+    },
+    {
+      "key": "project.Titan.db",
+      "category": "fact",
+      "content": "Titan 这个项目的存储选型是 Redis"
+    },
+    {
+      "key": "project.Titan.budget",
+      "category": "fact",
+      "content": "Titan 本季度预算 31 万，超出要重新审批"
+    },
+    {
+      "key": "project.Titan.deadline",
+      "category": "event",
+      "content": "Titan 计划 4 月底交付 v4.2"
+    },
+    {
+      "key": "project.Atlas.db",
+      "category": "fact",
+      "content": "Atlas 这个项目的存储选型是 DuckDB"
+    },
+    {
+      "key": "project.Atlas.budget",
+      "category": "fact",
+      "content": "Atlas 本季度预算 38 万，超出要重新审批"
+    },
+    {
+      "key": "project.Atlas.deadline",
+      "category": "event",
+      "content": "Atlas 计划 5 月底交付 v5.2"
+    },
+    {
+      "key": "project.Nova.db",
+      "category": "fact",
+      "content": "Nova 这个项目的存储选型是 ClickHouse"
+    },
+    {
+      "key": "project.Nova.budget",
+      "category": "fact",
+      "content": "Nova 本季度预算 45 万，超出要重新审批"
+    },
+    {
+      "key": "project.Nova.deadline",
+      "category": "event",
+      "content": "Nova 计划 6 月底交付 v6.2"
+    },
+    {
+      "key": "project.Vega.db",
+      "category": "fact",
+      "content": "Vega 这个项目的存储选型是 undefined"
+    },
+    {
+      "key": "project.Vega.budget",
+      "category": "fact",
+      "content": "Vega 本季度预算 52 万，超出要重新审批"
+    },
+    {
+      "key": "project.Vega.deadline",
+      "category": "event",
+      "content": "Vega 计划 7 月底交付 v7.2"
+    },
+    {
+      "key": "project.Lyra.db",
+      "category": "fact",
+      "content": "Lyra 这个项目的存储选型是 undefined"
+    },
+    {
+      "key": "project.Lyra.budget",
+      "category": "fact",
+      "content": "Lyra 本季度预算 59 万，超出要重新审批"
+    },
+    {
+      "key": "project.Lyra.deadline",
+      "category": "event",
+      "content": "Lyra 计划 8 月底交付 v8.2"
+    },
+    {
+      "key": "team.王工",
+      "category": "fact",
+      "content": "王工 负责安全评审"
+    },
+    {
+      "key": "team.王工.channel",
+      "category": "preference",
+      "content": "找王工走飞书，不要走群"
+    },
+    {
+      "key": "team.李敏",
+      "category": "fact",
+      "content": "李敏 负责数据管道"
+    },
+    {
+      "key": "team.李敏.channel",
+      "category": "preference",
+      "content": "找李敏走邮件，不要走群"
+    },
+    {
+      "key": "team.张涛",
+      "category": "fact",
+      "content": "张涛 负责前端联调"
+    },
+    {
+      "key": "team.张涛.channel",
+      "category": "preference",
+      "content": "找张涛走飞书，不要走群"
+    },
+    {
+      "key": "team.陈曦",
+      "category": "fact",
+      "content": "陈曦 负责压测"
+    },
+    {
+      "key": "team.陈曦.channel",
+      "category": "preference",
+      "content": "找陈曦走邮件，不要走群"
+    },
+    {
+      "key": "team.周航",
+      "category": "fact",
+      "content": "周航 负责部署脚本"
+    },
+    {
+      "key": "team.周航.channel",
+      "category": "preference",
+      "content": "找周航走飞书，不要走群"
+    },
+    {
+      "key": "team.刘洋",
+      "category": "fact",
+      "content": "刘洋 负责接口对齐"
+    },
+    {
+      "key": "team.刘洋.channel",
+      "category": "preference",
+      "content": "找刘洋走邮件，不要走群"
+    },
+    {
+      "key": "team.赵磊",
+      "category": "fact",
+      "content": "赵磊 负责告警治理"
+    },
+    {
+      "key": "team.赵磊.channel",
+      "category": "preference",
+      "content": "找赵磊走飞书，不要走群"
+    },
+    {
+      "key": "team.孙倩",
+      "category": "fact",
+      "content": "孙倩 负责成本核算"
+    },
+    {
+      "key": "team.孙倩.channel",
+      "category": "preference",
+      "content": "找孙倩走邮件，不要走群"
+    },
+    {
+      "key": "infra.Docker",
+      "category": "fact",
+      "content": "Docker 的配置放在 infra/docker/ 目录"
+    },
+    {
+      "key": "infra.Kubernetes",
+      "category": "fact",
+      "content": "Kubernetes 的配置放在 infra/kubernetes/ 目录"
+    },
+    {
+      "key": "infra.Terraform",
+      "category": "fact",
+      "content": "Terraform 的配置放在 infra/terraform/ 目录"
+    },
+    {
+      "key": "infra.GitHub Actions",
+      "category": "fact",
+      "content": "GitHub Actions 的配置放在 infra/github actions/ 目录"
+    },
+    {
+      "key": "infra.Nginx",
+      "category": "fact",
+      "content": "Nginx 的配置放在 infra/nginx/ 目录"
+    },
+    {
+      "key": "infra.Prometheus",
+      "category": "fact",
+      "content": "Prometheus 的配置放在 infra/prometheus/ 目录"
+    },
+    {
+      "key": "pref.lang.0",
+      "category": "preference",
+      "content": "写代码主要用 TypeScript，其他语言只读不写"
+    },
+    {
+      "key": "pref.lang.1",
+      "category": "preference",
+      "content": "写代码主要用 Python，其他语言只读不写"
+    },
+    {
+      "key": "pref.lang.2",
+      "category": "preference",
+      "content": "写代码主要用 C++，其他语言只读不写"
+    },
+    {
+      "key": "pref.lang.3",
+      "category": "preference",
+      "content": "写代码主要用 Rust，其他语言只读不写"
+    },
+    {
+      "key": "pref.lang.4",
+      "category": "preference",
+      "content": "写代码主要用 Go，其他语言只读不写"
+    },
+    {
+      "key": "pref.lang.5",
+      "category": "preference",
+      "content": "写代码主要用 Java，其他语言只读不写"
+    },
+    {
+      "key": "pref.drink.0",
+      "category": "preference",
+      "content": "只喝无糖的茶，别的饮料基本不碰"
+    },
+    {
+      "key": "pref.drink.1",
+      "category": "preference",
+      "content": "只喝冰美式，别的饮料基本不碰"
+    },
+    {
+      "key": "pref.drink.2",
+      "category": "preference",
+      "content": "只喝热拿铁，别的饮料基本不碰"
+    },
+    {
+      "key": "pref.drink.3",
+      "category": "preference",
+      "content": "只喝柠檬水，别的饮料基本不碰"
+    },
+    {
+      "key": "pref.drink.4",
+      "category": "preference",
+      "content": "只喝气泡水，别的饮料基本不碰"
+    },
+    {
+      "key": "pref.drink.5",
+      "category": "preference",
+      "content": "只喝豆浆，别的饮料基本不碰"
+    },
+    {
+      "key": "pref.editor.0",
+      "category": "preference",
+      "content": "习惯用 VS Code，不喜欢重量级 IDE"
+    },
+    {
+      "key": "pref.editor.1",
+      "category": "preference",
+      "content": "习惯用 Neovim，不喜欢重量级 IDE"
+    },
+    {
+      "key": "pref.editor.2",
+      "category": "preference",
+      "content": "习惯用 JetBrains，不喜欢重量级 IDE"
+    },
+    {
+      "key": "pref.editor.3",
+      "category": "preference",
+      "content": "习惯用 Zed，不喜欢重量级 IDE"
+    },
+    {
+      "key": "pref.editor.4",
+      "category": "preference",
+      "content": "习惯用 Sublime，不喜欢重量级 IDE"
+    },
+    {
+      "key": "user.city.成都",
+      "category": "fact",
+      "content": "住在成都，已经住了 1 年"
+    },
+    {
+      "key": "trip.成都",
+      "category": "event",
+      "content": "第 1 次出差去成都，当天回不来"
+    },
+    {
+      "key": "user.city.杭州",
+      "category": "fact",
+      "content": "住在杭州，已经住了 2 年"
+    },
+    {
+      "key": "trip.杭州",
+      "category": "event",
+      "content": "第 2 次出差去杭州，当天回不来"
+    },
+    {
+      "key": "user.city.西安",
+      "category": "fact",
+      "content": "住在西安，已经住了 3 年"
+    },
+    {
+      "key": "trip.西安",
+      "category": "event",
+      "content": "第 3 次出差去西安，当天回不来"
+    },
+    {
+      "key": "user.city.长沙",
+      "category": "fact",
+      "content": "住在长沙，已经住了 4 年"
+    },
+    {
+      "key": "trip.长沙",
+      "category": "event",
+      "content": "第 4 次出差去长沙，当天回不来"
+    },
+    {
+      "key": "user.city.厦门",
+      "category": "fact",
+      "content": "住在厦门，已经住了 5 年"
+    },
+    {
+      "key": "trip.厦门",
+      "category": "event",
+      "content": "第 5 次出差去厦门，当天回不来"
+    },
+    {
+      "key": "user.city.武汉",
+      "category": "fact",
+      "content": "住在武汉，已经住了 1 年"
+    },
+    {
+      "key": "trip.武汉",
+      "category": "event",
+      "content": "第 6 次出差去武汉，当天回不来"
+    },
+    {
+      "key": "user.city.重庆",
+      "category": "fact",
+      "content": "住在重庆，已经住了 2 年"
+    },
+    {
+      "key": "trip.重庆",
+      "category": "event",
+      "content": "第 7 次出差去重庆，当天回不来"
+    },
+    {
+      "key": "user.city.南京",
+      "category": "fact",
+      "content": "住在南京，已经住了 3 年"
+    },
+    {
+      "key": "trip.南京",
+      "category": "event",
+      "content": "第 8 次出差去南京，当天回不来"
+    },
+    {
+      "key": "user.city.青岛",
+      "category": "fact",
+      "content": "住在青岛，已经住了 4 年"
+    },
+    {
+      "key": "trip.青岛",
+      "category": "event",
+      "content": "第 9 次出差去青岛，当天回不来"
+    },
+    {
+      "key": "user.city.昆明",
+      "category": "fact",
+      "content": "住在昆明，已经住了 5 年"
+    },
+    {
+      "key": "trip.昆明",
+      "category": "event",
+      "content": "第 10 次出差去昆明，当天回不来"
+    },
+    {
+      "key": "metric.Orion",
+      "category": "fact",
+      "content": "Orion 的 p95 延迟目前是 120 毫秒"
+    },
+    {
+      "key": "metric.Falcon",
+      "category": "fact",
+      "content": "Falcon 的 p95 延迟目前是 157 毫秒"
+    },
+    {
+      "key": "metric.Eagle",
+      "category": "fact",
+      "content": "Eagle 的 p95 延迟目前是 194 毫秒"
+    },
+    {
+      "key": "metric.Titan",
+      "category": "fact",
+      "content": "Titan 的 p95 延迟目前是 231 毫秒"
+    },
+    {
+      "key": "metric.Atlas",
+      "category": "fact",
+      "content": "Atlas 的 p95 延迟目前是 268 毫秒"
+    },
+    {
+      "key": "metric.Nova",
+      "category": "fact",
+      "content": "Nova 的 p95 延迟目前是 305 毫秒"
+    },
+    {
+      "key": "metric.Vega",
+      "category": "fact",
+      "content": "Vega 的 p95 延迟目前是 342 毫秒"
+    },
+    {
+      "key": "metric.Lyra",
+      "category": "fact",
+      "content": "Lyra 的 p95 延迟目前是 379 毫秒"
+    },
+    {
+      "key": "habit.0",
+      "category": "preference",
+      "content": "凌晨一点 才睡，早上八点 起"
+    },
+    {
+      "key": "habit.1",
+      "category": "preference",
+      "content": "晚上十一点 才睡，九点 起"
+    },
+    {
+      "key": "habit.2",
+      "category": "preference",
+      "content": "十二点半 才睡，十点 起"
+    },
+    {
+      "key": "habit.3",
+      "category": "preference",
+      "content": "凌晨一点 才睡，早上八点 起"
+    },
+    {
+      "key": "habit.4",
+      "category": "preference",
+      "content": "晚上十一点 才睡，九点 起"
+    },
+    {
+      "key": "habit.5",
+      "category": "preference",
+      "content": "十二点半 才睡，十点 起"
+    },
+    {
+      "key": "habit.6",
+      "category": "preference",
+      "content": "凌晨一点 才睡，早上八点 起"
+    },
+    {
+      "key": "habit.7",
+      "category": "preference",
+      "content": "晚上十一点 才睡，九点 起"
+    },
+    {
+      "key": "habit.8",
+      "category": "preference",
+      "content": "十二点半 才睡，十点 起"
+    },
+    {
+      "key": "habit.9",
+      "category": "preference",
+      "content": "凌晨一点 才睡，早上八点 起"
+    },
+    {
+      "key": "habit.10",
+      "category": "preference",
+      "content": "晚上十一点 才睡，九点 起"
+    },
+    {
+      "key": "habit.11",
+      "category": "preference",
+      "content": "十二点半 才睡，十点 起"
+    }
+  ],
+  "queries": [
+    {
+      "q": "Orion 这个项目的存储选型是什么",
+      "expect": [
+        "project.Orion.db"
+      ],
+      "distractors": [
+        "metric.Orion",
+        "project.Orion.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Orion 本季度预算多少",
+      "expect": [
+        "project.Orion.budget"
+      ],
+      "distractors": [
+        "metric.Orion"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Orion 什么时候交付，交付哪个版本",
+      "expect": [
+        "project.Orion.deadline"
+      ],
+      "distractors": [
+        "project.Orion.db"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Orion 现在的 p95 延迟是多少",
+      "expect": [
+        "metric.Orion"
+      ],
+      "distractors": [
+        "project.Orion.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Falcon 这个项目的存储选型是什么",
+      "expect": [
+        "project.Falcon.db"
+      ],
+      "distractors": [
+        "metric.Falcon",
+        "project.Falcon.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Falcon 本季度预算多少",
+      "expect": [
+        "project.Falcon.budget"
+      ],
+      "distractors": [
+        "metric.Falcon"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Falcon 什么时候交付，交付哪个版本",
+      "expect": [
+        "project.Falcon.deadline"
+      ],
+      "distractors": [
+        "project.Falcon.db"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Falcon 现在的 p95 延迟是多少",
+      "expect": [
+        "metric.Falcon"
+      ],
+      "distractors": [
+        "project.Falcon.budget"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Eagle 这个项目的存储选型是什么",
+      "expect": [
+        "project.Eagle.db"
+      ],
+      "distractors": [
+        "metric.Eagle",
+        "project.Eagle.budget"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Eagle 本季度预算多少",
+      "expect": [
+        "project.Eagle.budget"
+      ],
+      "distractors": [
+        "metric.Eagle"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Eagle 什么时候交付，交付哪个版本",
+      "expect": [
+        "project.Eagle.deadline"
+      ],
+      "distractors": [
+        "project.Eagle.db"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Eagle 现在的 p95 延迟是多少",
+      "expect": [
+        "metric.Eagle"
+      ],
+      "distractors": [
+        "project.Eagle.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Titan 这个项目的存储选型是什么",
+      "expect": [
+        "project.Titan.db"
+      ],
+      "distractors": [
+        "metric.Titan",
+        "project.Titan.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Titan 本季度预算多少",
+      "expect": [
+        "project.Titan.budget"
+      ],
+      "distractors": [
+        "metric.Titan"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Titan 什么时候交付，交付哪个版本",
+      "expect": [
+        "project.Titan.deadline"
+      ],
+      "distractors": [
+        "project.Titan.db"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Titan 现在的 p95 延迟是多少",
+      "expect": [
+        "metric.Titan"
+      ],
+      "distractors": [
+        "project.Titan.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Atlas 这个项目的存储选型是什么",
+      "expect": [
+        "project.Atlas.db"
+      ],
+      "distractors": [
+        "metric.Atlas",
+        "project.Atlas.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Atlas 本季度预算多少",
+      "expect": [
+        "project.Atlas.budget"
+      ],
+      "distractors": [
+        "metric.Atlas"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Atlas 什么时候交付，交付哪个版本",
+      "expect": [
+        "project.Atlas.deadline"
+      ],
+      "distractors": [
+        "project.Atlas.db"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Atlas 现在的 p95 延迟是多少",
+      "expect": [
+        "metric.Atlas"
+      ],
+      "distractors": [
+        "project.Atlas.budget"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Nova 这个项目的存储选型是什么",
+      "expect": [
+        "project.Nova.db"
+      ],
+      "distractors": [
+        "metric.Nova",
+        "project.Nova.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Nova 本季度预算多少",
+      "expect": [
+        "project.Nova.budget"
+      ],
+      "distractors": [
+        "metric.Nova"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Nova 什么时候交付，交付哪个版本",
+      "expect": [
+        "project.Nova.deadline"
+      ],
+      "distractors": [
+        "project.Nova.db"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Nova 现在的 p95 延迟是多少",
+      "expect": [
+        "metric.Nova"
+      ],
+      "distractors": [
+        "project.Nova.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Vega 这个项目的存储选型是什么",
+      "expect": [
+        "project.Vega.db"
+      ],
+      "distractors": [
+        "metric.Vega",
+        "project.Vega.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Vega 本季度预算多少",
+      "expect": [
+        "project.Vega.budget"
+      ],
+      "distractors": [
+        "metric.Vega"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Vega 什么时候交付，交付哪个版本",
+      "expect": [
+        "project.Vega.deadline"
+      ],
+      "distractors": [
+        "project.Vega.db"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Vega 现在的 p95 延迟是多少",
+      "expect": [
+        "metric.Vega"
+      ],
+      "distractors": [
+        "project.Vega.budget"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Lyra 这个项目的存储选型是什么",
+      "expect": [
+        "project.Lyra.db"
+      ],
+      "distractors": [
+        "metric.Lyra",
+        "project.Lyra.budget"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Lyra 本季度预算多少",
+      "expect": [
+        "project.Lyra.budget"
+      ],
+      "distractors": [
+        "metric.Lyra"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Lyra 什么时候交付，交付哪个版本",
+      "expect": [
+        "project.Lyra.deadline"
+      ],
+      "distractors": [
+        "project.Lyra.db"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "Lyra 现在的 p95 延迟是多少",
+      "expect": [
+        "metric.Lyra"
+      ],
+      "distractors": [
+        "project.Lyra.budget"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "王工 负责哪一部分",
+      "expect": [
+        "team.王工"
+      ],
+      "distractors": [
+        "team.王工.channel"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "和王工沟通应该走什么渠道",
+      "expect": [
+        "team.王工.channel"
+      ],
+      "distractors": [
+        "team.王工"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "李敏 负责哪一部分",
+      "expect": [
+        "team.李敏"
+      ],
+      "distractors": [
+        "team.李敏.channel"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "和李敏沟通应该走什么渠道",
+      "expect": [
+        "team.李敏.channel"
+      ],
+      "distractors": [
+        "team.李敏"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "张涛 负责哪一部分",
+      "expect": [
+        "team.张涛"
+      ],
+      "distractors": [
+        "team.张涛.channel"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "和张涛沟通应该走什么渠道",
+      "expect": [
+        "team.张涛.channel"
+      ],
+      "distractors": [
+        "team.张涛"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "陈曦 负责哪一部分",
+      "expect": [
+        "team.陈曦"
+      ],
+      "distractors": [
+        "team.陈曦.channel"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "和陈曦沟通应该走什么渠道",
+      "expect": [
+        "team.陈曦.channel"
+      ],
+      "distractors": [
+        "team.陈曦"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "周航 负责哪一部分",
+      "expect": [
+        "team.周航"
+      ],
+      "distractors": [
+        "team.周航.channel"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "和周航沟通应该走什么渠道",
+      "expect": [
+        "team.周航.channel"
+      ],
+      "distractors": [
+        "team.周航"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "刘洋 负责哪一部分",
+      "expect": [
+        "team.刘洋"
+      ],
+      "distractors": [
+        "team.刘洋.channel"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "和刘洋沟通应该走什么渠道",
+      "expect": [
+        "team.刘洋.channel"
+      ],
+      "distractors": [
+        "team.刘洋"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "赵磊 负责哪一部分",
+      "expect": [
+        "team.赵磊"
+      ],
+      "distractors": [
+        "team.赵磊.channel"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "和赵磊沟通应该走什么渠道",
+      "expect": [
+        "team.赵磊.channel"
+      ],
+      "distractors": [
+        "team.赵磊"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "孙倩 负责哪一部分",
+      "expect": [
+        "team.孙倩"
+      ],
+      "distractors": [
+        "team.孙倩.channel"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "和孙倩沟通应该走什么渠道",
+      "expect": [
+        "team.孙倩.channel"
+      ],
+      "distractors": [
+        "team.孙倩"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "Docker 的配置放在哪个目录",
+      "expect": [
+        "infra.Docker"
+      ],
+      "distractors": [],
+      "split": "holdout"
+    },
+    {
+      "q": "Kubernetes 的配置放在哪个目录",
+      "expect": [
+        "infra.Kubernetes"
+      ],
+      "distractors": [],
+      "split": "holdout"
+    },
+    {
+      "q": "Terraform 的配置放在哪个目录",
+      "expect": [
+        "infra.Terraform"
+      ],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "GitHub Actions 的配置放在哪个目录",
+      "expect": [
+        "infra.GitHub Actions"
+      ],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "Nginx 的配置放在哪个目录",
+      "expect": [
+        "infra.Nginx"
+      ],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "Prometheus 的配置放在哪个目录",
+      "expect": [
+        "infra.Prometheus"
+      ],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "我写代码主要用什么语言（第 1 个偏好）",
+      "expect": [
+        "pref.lang.0"
+      ],
+      "distractors": [
+        "pref.lang.1",
+        "pref.lang.2"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我写代码主要用什么语言（第 2 个偏好）",
+      "expect": [
+        "pref.lang.1"
+      ],
+      "distractors": [
+        "pref.lang.2",
+        "pref.lang.3"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我写代码主要用什么语言（第 3 个偏好）",
+      "expect": [
+        "pref.lang.2"
+      ],
+      "distractors": [
+        "pref.lang.3",
+        "pref.lang.4"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我写代码主要用什么语言（第 4 个偏好）",
+      "expect": [
+        "pref.lang.3"
+      ],
+      "distractors": [
+        "pref.lang.4",
+        "pref.lang.5"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我写代码主要用什么语言（第 5 个偏好）",
+      "expect": [
+        "pref.lang.4"
+      ],
+      "distractors": [
+        "pref.lang.5",
+        "pref.lang.0"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我写代码主要用什么语言（第 6 个偏好）",
+      "expect": [
+        "pref.lang.5"
+      ],
+      "distractors": [
+        "pref.lang.0",
+        "pref.lang.1"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我平时喝什么（偏好 1）",
+      "expect": [
+        "pref.drink.0"
+      ],
+      "distractors": [
+        "pref.drink.1"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我平时喝什么（偏好 2）",
+      "expect": [
+        "pref.drink.1"
+      ],
+      "distractors": [
+        "pref.drink.2"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我平时喝什么（偏好 3）",
+      "expect": [
+        "pref.drink.2"
+      ],
+      "distractors": [
+        "pref.drink.3"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我平时喝什么（偏好 4）",
+      "expect": [
+        "pref.drink.3"
+      ],
+      "distractors": [
+        "pref.drink.4"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我平时喝什么（偏好 5）",
+      "expect": [
+        "pref.drink.4"
+      ],
+      "distractors": [
+        "pref.drink.5"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我平时喝什么（偏好 6）",
+      "expect": [
+        "pref.drink.5"
+      ],
+      "distractors": [
+        "pref.drink.0"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我用什么编辑器（偏好 1）",
+      "expect": [
+        "pref.editor.0"
+      ],
+      "distractors": [
+        "pref.editor.1"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我用什么编辑器（偏好 2）",
+      "expect": [
+        "pref.editor.1"
+      ],
+      "distractors": [
+        "pref.editor.2"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我用什么编辑器（偏好 3）",
+      "expect": [
+        "pref.editor.2"
+      ],
+      "distractors": [
+        "pref.editor.3"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我用什么编辑器（偏好 4）",
+      "expect": [
+        "pref.editor.3"
+      ],
+      "distractors": [
+        "pref.editor.4"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我用什么编辑器（偏好 5）",
+      "expect": [
+        "pref.editor.4"
+      ],
+      "distractors": [
+        "pref.editor.0"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我在成都住了几年",
+      "expect": [
+        "user.city.成都"
+      ],
+      "distractors": [
+        "trip.成都"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "第 1 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.成都"
+      ],
+      "distractors": [
+        "user.city.成都"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我在杭州住了几年",
+      "expect": [
+        "user.city.杭州"
+      ],
+      "distractors": [
+        "trip.杭州"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "第 2 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.杭州"
+      ],
+      "distractors": [
+        "user.city.杭州"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我在西安住了几年",
+      "expect": [
+        "user.city.西安"
+      ],
+      "distractors": [
+        "trip.西安"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "第 3 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.西安"
+      ],
+      "distractors": [
+        "user.city.西安"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我在长沙住了几年",
+      "expect": [
+        "user.city.长沙"
+      ],
+      "distractors": [
+        "trip.长沙"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "第 4 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.长沙"
+      ],
+      "distractors": [
+        "user.city.长沙"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我在厦门住了几年",
+      "expect": [
+        "user.city.厦门"
+      ],
+      "distractors": [
+        "trip.厦门"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "第 5 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.厦门"
+      ],
+      "distractors": [
+        "user.city.厦门"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我在武汉住了几年",
+      "expect": [
+        "user.city.武汉"
+      ],
+      "distractors": [
+        "trip.武汉"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "第 6 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.武汉"
+      ],
+      "distractors": [
+        "user.city.武汉"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我在重庆住了几年",
+      "expect": [
+        "user.city.重庆"
+      ],
+      "distractors": [
+        "trip.重庆"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "第 7 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.重庆"
+      ],
+      "distractors": [
+        "user.city.重庆"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我在南京住了几年",
+      "expect": [
+        "user.city.南京"
+      ],
+      "distractors": [
+        "trip.南京"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "第 8 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.南京"
+      ],
+      "distractors": [
+        "user.city.南京"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我在青岛住了几年",
+      "expect": [
+        "user.city.青岛"
+      ],
+      "distractors": [
+        "trip.青岛"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "第 9 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.青岛"
+      ],
+      "distractors": [
+        "user.city.青岛"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我在昆明住了几年",
+      "expect": [
+        "user.city.昆明"
+      ],
+      "distractors": [
+        "trip.昆明"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "第 10 次出差去哪，能当天回吗",
+      "expect": [
+        "trip.昆明"
+      ],
+      "distractors": [
+        "user.city.昆明"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我的作息是怎样的（第 1 条）",
+      "expect": [
+        "habit.0"
+      ],
+      "distractors": [
+        "habit.1"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我的作息是怎样的（第 2 条）",
+      "expect": [
+        "habit.1"
+      ],
+      "distractors": [
+        "habit.2"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我的作息是怎样的（第 3 条）",
+      "expect": [
+        "habit.2"
+      ],
+      "distractors": [
+        "habit.3"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我的作息是怎样的（第 4 条）",
+      "expect": [
+        "habit.3"
+      ],
+      "distractors": [
+        "habit.4"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我的作息是怎样的（第 5 条）",
+      "expect": [
+        "habit.4"
+      ],
+      "distractors": [
+        "habit.5"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我的作息是怎样的（第 6 条）",
+      "expect": [
+        "habit.5"
+      ],
+      "distractors": [
+        "habit.6"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我的作息是怎样的（第 7 条）",
+      "expect": [
+        "habit.6"
+      ],
+      "distractors": [
+        "habit.7"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我的作息是怎样的（第 8 条）",
+      "expect": [
+        "habit.7"
+      ],
+      "distractors": [
+        "habit.8"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我的作息是怎样的（第 9 条）",
+      "expect": [
+        "habit.8"
+      ],
+      "distractors": [
+        "habit.9"
+      ],
+      "split": "holdout"
+    },
+    {
+      "q": "我的作息是怎样的（第 10 条）",
+      "expect": [
+        "habit.9"
+      ],
+      "distractors": [
+        "habit.10"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我的作息是怎样的（第 11 条）",
+      "expect": [
+        "habit.10"
+      ],
+      "distractors": [
+        "habit.11"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "我的作息是怎样的（第 12 条）",
+      "expect": [
+        "habit.11"
+      ],
+      "distractors": [
+        "habit.0"
+      ],
+      "split": "dev"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 1）",
+      "expect": [],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 2）",
+      "expect": [],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 3）",
+      "expect": [],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 4）",
+      "expect": [],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 5）",
+      "expect": [],
+      "distractors": [],
+      "split": "holdout"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 6）",
+      "expect": [],
+      "distractors": [],
+      "split": "holdout"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 7）",
+      "expect": [],
+      "distractors": [],
+      "split": "holdout"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 8）",
+      "expect": [],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 9）",
+      "expect": [],
+      "distractors": [],
+      "split": "dev"
+    },
+    {
+      "q": "今天天气怎么样（无关问题 10）",
+      "expect": [],
+      "distractors": [],
+      "split": "dev"
+    }
+  ]
+}
