@@ -10,7 +10,7 @@
  * Protocol, deliberately simple and reproducible:
  *
  *   1. ingest every dialogue turn as one memory (speaker-prefixed text), embedded with bge-m3
- *   2. for each question: retrieve top-k turns, ask the model to answer **only** from them
+ *   2. for each question: retrieve top-k turns (k default 15), ask the model to answer **only** from them
  *   3. score with SQuAD-style token F1 against the gold answer; adversarial questions are scored by
  *      whether the model refuses instead
  *
@@ -31,8 +31,8 @@ const flag = (name, fallback) => {
 const DATA = flag("data", "/tmp/locomo10.json");
 const SAMPLE = Number(flag("sample", "0"));
 const LIMIT = Number(flag("limit", "40"));
-const K = Number(flag("k", "5"));
-const OUT = flag("out", "");
+const K = Number(flag("k", "15"));
+const OUT = flag("out", "/tmp/locomo-result.json");
 const BASE = process.env.MEM0_EMBED_BASE_URL;
 const EMB_KEY = process.env.MEM0_EMBED_API_KEY;
 const EMB_MODEL = process.env.MEM0_EMBED_MODEL ?? "BAAI/bge-m3";
@@ -112,11 +112,18 @@ const data = JSON.parse(readFileSync(DATA, "utf8"));
 const sample = data[SAMPLE];
 const conversation = sample.conversation;
 const turns = [];
-for (const [key, value] of Object.entries(conversation)) {
-  if (!/^session_\d+$/.test(key) || !Array.isArray(value)) continue;
+const sessionKeys = Object.keys(conversation)
+  .filter((key) => /^session_\d+$/.test(key))
+  .sort((a, b) => Number(a.split("_")[1]) - Number(b.split("_")[1]));
+for (const key of sessionKeys) {
+  const value = conversation[key];
+  if (!Array.isArray(value)) continue;
+  // 会话时间必须进正文：temporal 类问题问的就是"什么时候"，没有日期无从回答
+  const when = String(conversation[`${key}_date_time`] ?? "").trim();
   for (const turn of value) {
     const id = turn.dia_id ?? `${key}-${turns.length}`;
-    turns.push({ id, text: `${turn.speaker}: ${turn.text}` });
+    const prefix = when ? `[${when}] ` : "";
+    turns.push({ id, text: `${prefix}${turn.speaker}: ${turn.text}` });
   }
 }
 console.log(`样本 ${SAMPLE}（${sample.sample_id}）：${turns.length} 轮对话，${sample.qa.length} 个问题`);
