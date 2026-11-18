@@ -26,6 +26,7 @@ import { KnowledgeStore, formatHits } from "./knowledge.ts";
 import { ProposalStore } from "./proposal.ts";
 import { buildDigest as buildDailyDigest, digestDue, formatDigest } from "./digest.ts";
 import { attachmentNote, saveAttachment } from "./inbound.ts";
+import { InterruptRegistry, isStopCommand } from "./interrupt.ts";
 import { violations } from "./preference.ts";
 import { resolvePreferences } from "./preference.ts";
 import { FeedbackStore, appendCases, isComplaint } from "./feedback.ts";
@@ -1036,11 +1037,23 @@ async function cmdServe(args: string[]): Promise<number> {
   dim(`fan-out API listening on 127.0.0.1:${control.port}`);
 
   // One handler for every transport: identity → event → run → reply → maybe distil.
+  const interrupts = new InterruptRegistry();
+
   const handler = async (
     message: Incoming,
     send: (chatId: string, text: string) => Promise<void>,
     media?: (chatId: string, path: string, caption?: string) => Promise<void>,
   ) => {
+    // A stop command must be handled before anything else: it is the only message whose whole
+    // purpose is to affect a task that is already running.
+    if (isStopCommand(message.text)) {
+      const thread = `${message.channel}:${message.chatId}`;
+      const stopped = interrupts.abort(thread);
+      store.appendEvent("", "task_interrupt", { thread, stopped, text: message.text });
+      await send(message.chatId, stopped ? "好，停了。" : "现在没有在跑的任务。");
+      return;
+    }
+
     // Self-modification proposals are decided before anything else: "同意" here means "change
     // your own capability surface", which must not be confused with a tool approval.
     const pendingProposal = proposals.pendingFor(`${message.channel}:${message.chatId}`);
@@ -1110,13 +1123,15 @@ async function cmdServe(args: string[]): Promise<number> {
       if (captured) dim(`badcase #${captured.id} 已记录（草稿，待审）`);
     }
     busy.add(result.thread);
+    const taskId = store.createTask(message.text, cfg.workspace, result.thread);
+    const running = interrupts.start(result.thread, taskId);
+    let reply: string;
     try {
-      const taskId = store.createTask(message.text, cfg.workspace, result.thread);
-      const reply = await runTask(
+      reply = await runTask(
         store,
         cfg,
         store.getTask(taskId)!,
-        { onStatus: dim, recordUserEvent: false },
+        { onStatus: dim, recordUserEvent: false, signal: running.controller.signal },
         memory,
       );
       // Reminder tokens are parsed here rather than per channel: otherwise the QQ branch owned
@@ -1192,9 +1207,19 @@ async function cmdServe(args: string[]): Promise<number> {
       }
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      console.error(`failed to handle message: ${reason}`);
-      await send(message.chatId, `执行失败：${reason.slice(0, 300)}`).catch(() => {});
+      // 被用户叫停不是失败：不要用"执行失败"吓人，也不该把它计入错误率
+      if (/abort|停止/i.test(reason) || running.controller.signal.aborted) {
+        console.log(`任务已停止：${taskId}`);
+        store.appendEvent(taskId, "task_interrupted_done", { reason });
+        await send(message.chatId, "已停止。").catch(() => {});
+      } else {
+        console.error(`failed to handle message: ${reason}`);
+        await send(message.chatId, `执行失败：${reason.slice(0, 300)}`).catch(() => {});
+      }
     } finally {
+      // Both must be released: a leaked busy flag blocks new messages, a leaked interrupt entry
+      // blocks the *next* task on this thread with a misleading "already running" error.
+      interrupts.finish(result.thread);
       busy.delete(result.thread);
     }
   };
