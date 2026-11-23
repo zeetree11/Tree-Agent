@@ -237,6 +237,10 @@ async function runAttempt(
   // tool calls instead: identical fingerprints in a row mean no progress was made.
   const loopGuard = new LoopGuard();
 
+  // 工具产出摘要：模型有时抓完资料就直接结束、不写总结。判据如果只看"有没有最终文本"，
+  // 这些真实工作就会被判死并丢掉——所以留一份可读摘要做兜底。
+  const toolDigest: string[] = [];
+
   rpc.on("record", (record: RpcRecord) => {
     // Only records that cannot be reconstructed are persisted; streaming deltas are dropped.
     const persisted = persistRecord(record, cfg.eventPayloadMax ?? 2000);
@@ -317,6 +321,13 @@ async function runAttempt(
       }
       if (record.type === "tool_execution_start" && callId) {
         toolSpans.set(callId, store.startSpan(task.id, "tool", name, rootSpan, { toolCallId: callId }));
+      }
+      if (record.type === "tool_execution_end") {
+        const output = record.result ?? record.output ?? record.error ?? null;
+        const text = typeof output === "string" ? output : JSON.stringify(output ?? "");
+        if (text && text.length > 0) {
+          toolDigest.push(`[${name}] ${text.replace(/\s+/g, " ").slice(0, 200)}`);
+        }
       }
       if (record.type === "tool_execution_end" && callId) {
         const spanId = toolSpans.get(callId);
@@ -565,6 +576,16 @@ async function runAttempt(
     }
     if (lastError) throw new Error(lastError);
     if (!transcript.trim()) {
+      // 有工具产出 → 这是"没收尾"，不是"没干活"：把产出交回去，并记一条事件便于统计
+      if (toolDigest.length > 0) {
+        store.appendEvent(task.id, "no_final_text", { tools: toolDigest.length });
+        const fallback = [
+          "（模型没有给出总结，以下是本次任务中工具调用的结果摘要）",
+          ...toolDigest.slice(-12),
+        ].join("\n");
+        transcript = fallback;
+        return commitTranscript();
+      }
       throw new Error("agent finished without producing text (check model credentials)");
     }
 

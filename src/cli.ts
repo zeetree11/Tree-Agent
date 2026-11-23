@@ -1026,15 +1026,16 @@ async function cmdServe(args: string[]): Promise<number> {
     notes: new NoteStore(DATA_DIR),
     locks: new FileLockStore(DATA_DIR),
     proposals,
-    defaultThread: "fanout",
+    defaultThread: "orchestrate",
     log: (message) => dim(message),
+    recordEvent: (type, payload) => store.appendEvent("", type, payload),
     runChild: async ({ prompt, thread, index }) => {
       const childThread = `${thread}#sub${index}`;
       const childTask = store.createTask(prompt, cfg.workspace, childThread);
       return runTask(store, cfg, store.getTask(childTask)!, { onStatus: dim }, memory, childGate);
     },
   });
-  dim(`fan-out API listening on 127.0.0.1:${control.port}`);
+  dim(`orchestrate API listening on 127.0.0.1:${control.port}`);
 
   // One handler for every transport: identity → event → run → reply → maybe distil.
   const interrupts = new InterruptRegistry();

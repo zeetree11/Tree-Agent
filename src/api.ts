@@ -40,6 +40,8 @@ export type ControlDeps = {
   /** Controlled self-modification: persona files and MCP server entries. */
   proposals?: ProposalStore;
   log?: (message: string) => void;
+  /** Persist an orchestration event. Without this, a run leaves no trace after the console scrolls. */
+  recordEvent?: (type: string, payload: unknown) => void;
 };
 
 export type ControlServer = {
@@ -355,7 +357,10 @@ export function startControlServer(deps: ControlDeps, port = Number(process.env.
               seeds,
               {
                 log: (message) => log(message),
-                record: (type, payload) => log(`${type} ${JSON.stringify(payload).slice(0, 200)}`),
+                record: (type, payload) => {
+                  log(`${type} ${JSON.stringify(payload).slice(0, 200)}`);
+                  deps.recordEvent?.(type, payload);
+                },
                 runChild: async ({ prompt, thread: childThread }) =>
                   deps.runChild({ prompt, thread: childThread, index: 1 }),
               },
@@ -367,7 +372,6 @@ export function startControlServer(deps: ControlDeps, port = Number(process.env.
               },
             );
 
-            const ok = run.results.length;
             const digest = [
               `目标：${goal}`,
               "",
