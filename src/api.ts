@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { statSync } from "node:fs";
 import path from "node:path";
-import { buildFanoutDigest, NoteStore, retryPrompt, shouldRetry, type Note } from "./fanout.ts";
+import { NoteStore, type Note } from "./fanout.ts";
 import { FileLockStore } from "./file-lock.ts";
 import { ProposalStore, describeMcpEntry } from "./proposal.ts";
 import { buildSplitPrompt, parseSubtasks, runWithLimit, type ChildSpec } from "./subagent.ts";
@@ -23,7 +23,7 @@ import { buildSeedPrompt, orchestrate, parseSeeds } from "./orchestrate-run.ts";
  * serialises tasks per thread makes this acceptable at single-user scale; a per-scope registry
  * is the fix when it stops being true.
  */
-export type FanoutDeps = {
+export type ControlDeps = {
   /** Run one child task and return its text. Index 0 is reserved for the split step. */
   runChild: (input: { prompt: string; thread: string; index: number; parentTaskId?: string }) => Promise<string>;
   notes: NoteStore;
@@ -69,7 +69,7 @@ function json(response: ServerResponse, status: number, body: unknown): void {
   response.end(payload);
 }
 
-export function startControlServer(deps: FanoutDeps, port = Number(process.env.PI_RT_API_PORT ?? 8899)): Promise<ControlServer> {
+export function startControlServer(deps: ControlDeps, port = Number(process.env.PI_RT_API_PORT ?? 8899)): Promise<ControlServer> {
   const log = deps.log ?? (() => {});
   const maxChildren = Math.min(Math.max(deps.maxChildren ?? 4, 2), 6);
   const concurrency = Math.min(Math.max(deps.concurrency ?? Number(process.env.PI_RT_SPAWN_CONCURRENCY ?? 3), 1), 4);
@@ -80,7 +80,7 @@ export function startControlServer(deps: FanoutDeps, port = Number(process.env.P
   // A boolean here was a bug with teeth: if a child task hangs (or the caller gives up and retries),
   // the flag never clears and every later call answers "already running" forever. A lease with a
   // hard expiry turns that permanent deadlock into a bounded wait.
-  const MAX_RUN_MS = Number(process.env.PI_RT_FANOUT_MAX_MS ?? 900_000);
+  const MAX_RUN_MS = Number(process.env.PI_RT_ORCHESTRATE_MAX_MS ?? process.env.PI_RT_FANOUT_MAX_MS ?? 900_000);
   let runningSince: number | null = null;
   const isRunning = () => runningSince !== null && Date.now() - runningSince < MAX_RUN_MS;
 
@@ -323,7 +323,7 @@ export function startControlServer(deps: FanoutDeps, port = Number(process.env.P
         }
 
         // Dynamic orchestration: the runtime decides task by task instead of splitting once.
-        // Same session binding and quota as /fanout, because both end up speaking to the user.
+        // Same session binding and quota as the orchestrate path, because both speak to the user.
         if (request.method === "POST" && url === "/orchestrate") {
           const body = await readJson(request);
           const goal = String(body.goal ?? "").trim();
@@ -377,67 +377,6 @@ export function startControlServer(deps: FanoutDeps, port = Number(process.env.P
 
             log(`orchestrate done ${run.summary.done}/${run.summary.total}`);
             json(response, 200, { digest, summary: run.summary, tasks: run.tasks.map((task) => ({ id: task.id, status: task.status, role: task.role })) });
-          } catch (error) {
-            json(response, 500, { error: error instanceof Error ? error.message : String(error) });
-          } finally {
-            runningSince = null;
-          }
-          return;
-        }
-
-        if (request.method === "POST" && url === "/fanout") {
-          const body = await readJson(request);
-          const prompt = String(body.prompt ?? "").trim();
-          if (!prompt) {
-            json(response, 400, { error: "prompt 必填" });
-            return;
-          }
-          if (prompt.length > 8_000) {
-            json(response, 400, { error: "prompt 过长（上限 8000 字符）" });
-            return;
-          }
-          if (isRunning()) {
-            json(response, 409, { error: "已有 fan-out 在执行，稍后再试" });
-            return;
-          }
-
-          runningSince = Date.now();
-          currentScope = String(body.scope ?? "") || `fanout-${Date.now()}`;
-          const count = Math.min(Math.max(Number(body.count ?? 3), 2), maxChildren);
-          const thread = deps.defaultThread ?? "default";
-          log(`fan-out start scope=${currentScope} count=${count}`);
-
-          try {
-            const splitOut = await deps.runChild({ prompt: buildSplitPrompt(prompt, count), thread, index: 0 });
-            const specs: ChildSpec[] = parseSubtasks(splitOut, count);
-            if (specs.length === 0) {
-              deps.notes.clear(currentScope);
-              json(response, 200, { digest: "拆分失败：模型没有返回可用的子任务列表。", results: [] });
-              return;
-            }
-
-            const results = await runWithLimit(specs, concurrency, async (spec) => {
-              let attempts = 0;
-              let lastError = "";
-              while (attempts < 2) {
-                attempts += 1;
-                const childPrompt = attempts === 1 ? spec.prompt : retryPrompt(spec.prompt, lastError);
-                try {
-                  const output = await deps.runChild({ prompt: childPrompt, thread, index: spec.index });
-                  return { title: spec.title, ok: true, output, attempts };
-                } catch (error) {
-                  lastError = error instanceof Error ? error.message : String(error);
-                  if (!shouldRetry("failed", attempts)) break;
-                  log(`子任务 ${spec.index} 失败，重试一次：${lastError}`);
-                }
-              }
-              return { title: spec.title, ok: false, output: "", attempts, error: lastError };
-            });
-
-            const notes: Note[] = deps.notes.read(currentScope);
-            const digest = buildFanoutDigest({ prompt, results, notes });
-            log(`fan-out done scope=${currentScope} ok=${results.filter((r) => r.ok).length}/${results.length} notes=${notes.length}`);
-            json(response, 200, { digest, results, notes, scope: currentScope });
           } catch (error) {
             json(response, 500, { error: error instanceof Error ? error.message : String(error) });
           } finally {

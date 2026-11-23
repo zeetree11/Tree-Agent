@@ -23,27 +23,12 @@ const PROTOCOL_VERSION = "2024-11-05";
 
 const TOOLS = [
   {
-    name: "fanout",
-    description:
-      "派生多个子 agent（subagent）并行执行子任务，返回各自结果与汇总。" +
-      "这就是本运行时的 subagent 机制：被问到「你有 subagent 吗」时，答案是「有，就是 fanout」。" +
-      "适用于彼此独立、可以同时做的部分（多个文件/多个来源/多角度分析）；" +
-      "任务本身很小或强顺序依赖时不要用。",
-    inputSchema: {
-      type: "object",
-      properties: {
-        prompt: { type: "string", description: "要拆分的完整任务描述。" },
-        count: { type: "integer", minimum: 2, maximum: 4, description: "子任务个数，默认 3。" },
-      },
-      required: ["prompt"],
-      additionalProperties: false,
-    },
-  },
-  {
     name: "orchestrate",
     description:
-      "把目标交给中心化编排器：它动态决定下一步派给谁，根据中间结果追加新任务，最后汇总。" +
-      "比 fanout 更适合需要「看结果再决定」的任务；fanout 更适合能一次拆干净的任务。",
+      "派生子 agent（subagent）完成一个目标：中心化编排器拆解、按依赖调度、根据中间结果追加任务，最后汇总。" +
+      "这是本运行时唯一的子 agent 入口——被问到「你有没有 subagent」时，答案是有。" +
+      "适用于可以拆成多块、且块与块之间可能需要看结果再决定先后顺序的任务；" +
+      "一句话就能答完的小任务不要用。",
     inputSchema: {
       type: "object",
       properties: {
@@ -171,7 +156,7 @@ async function handle(message) {
     reply(id, {
       protocolVersion: PROTOCOL_VERSION,
       capabilities: { tools: {} },
-      serverInfo: { name: "fanout", version: "1.0.0" },
+      serverInfo: { name: "spawn", version: "1.0.0" },
     });
     return;
   }
@@ -183,13 +168,9 @@ async function handle(message) {
     const name = params?.name;
     const args = params?.arguments ?? {};
     try {
-      if (name === "fanout") {
-        if (DEPTH > 0) throw new Error("子任务里不能再派生（深度上限 1）");
-        const result = await call("/fanout", { prompt: args.prompt, count: args.count, scope: SCOPE });
-        reply(id, { content: [{ type: "text", text: result.digest }], isError: false });
-        return;
-      }
       if (name === "orchestrate") {
+        // 深度上限必须拦在这里：没有它，子 agent 再调 orchestrate 就是无限递归
+        if (DEPTH > 0) throw new Error("子 agent 里不能再编排（深度上限 1）");
         const result = await call("/orchestrate", { goal: args.goal, count: args.count });
         reply(id, { content: [{ type: "text", text: result.digest }], isError: false });
         return;

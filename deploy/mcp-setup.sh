@@ -40,7 +40,7 @@ chmod 600 "$CONF_DIR/mcp.json"
 cat "$CONF_DIR/mcp.json"
 
 # 编排/派发租约：超过这个时间自动放行，避免一个卡住的子任务把后续请求永久挡住。
-grep -q '^PI_RT_FANOUT_MAX_MS=' "$ENV" || echo 'PI_RT_FANOUT_MAX_MS=900000' >> "$ENV"
+grep -q '^PI_RT_ORCHESTRATE_MAX_MS=' "$ENV" || echo 'PI_RT_ORCHESTRATE_MAX_MS=900000' >> "$ENV"
 
 echo "== 3) 沙箱切 full =="
 if grep -q '^PI_RT_SANDBOX=' "$ENV"; then

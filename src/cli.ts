@@ -1018,10 +1018,10 @@ async function cmdServe(args: string[]): Promise<number> {
   const proposals = new ProposalStore(DATA_DIR);
   const feedback = new FeedbackStore(DATA_DIR);
 
-  // Fan-out control API. The agent reaches it through the `fanout` MCP tool; the runtime stays the
+  // Orchestration control API. The agent reaches it through the `orchestrate` MCP tool; the runtime stays the
   // only owner of the task queue. Children run on their own threads (`#subN`) so their context and
   // memory do not leak into the parent — the same isolation the CLI --spawn path uses.
-  const fanoutGate = new Gate(3, 0);
+  const childGate = new Gate(3, 0);
   const control = await startControlServer({
     notes: new NoteStore(DATA_DIR),
     locks: new FileLockStore(DATA_DIR),
@@ -1031,7 +1031,7 @@ async function cmdServe(args: string[]): Promise<number> {
     runChild: async ({ prompt, thread, index }) => {
       const childThread = `${thread}#sub${index}`;
       const childTask = store.createTask(prompt, cfg.workspace, childThread);
-      return runTask(store, cfg, store.getTask(childTask)!, { onStatus: dim }, memory, fanoutGate);
+      return runTask(store, cfg, store.getTask(childTask)!, { onStatus: dim }, memory, childGate);
     },
   });
   dim(`fan-out API listening on 127.0.0.1:${control.port}`);
