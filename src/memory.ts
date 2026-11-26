@@ -655,6 +655,29 @@ export class MemoryStore {
     for (const id of ids) statement.run(ts, id);
   }
 
+  /** 手动改写内容。不走证据流水线：这是人/Agent 的显式编辑，不是从对话里推断出来的。 */
+  setContent(id: number, content: string): boolean {
+    const result = this.db
+      .prepare("UPDATE memories SET content = ?, updated_at = ? WHERE id = ? AND status = 'active'")
+      .run(content.trim(), new Date().toISOString(), id);
+    return Number(result.changes) > 0;
+  }
+
+  setImportance(id: number, importance: number): boolean {
+    const result = this.db
+      .prepare("UPDATE memories SET importance = ?, updated_at = ? WHERE id = ? AND status = 'active'")
+      .run(Math.max(1, Math.min(5, importance)), new Date().toISOString(), id);
+    return Number(result.changes) > 0;
+  }
+
+  /** 撤销一条记忆：标记 invalidated 而不是物理删除，证据链仍然可查。 */
+  retire(id: number, note = "手动撤销"): boolean {
+    const result = this.db
+      .prepare("UPDATE memories SET status = 'invalidated', note = ?, updated_at = ? WHERE id = ? AND status != 'invalidated'")
+      .run(note, new Date().toISOString(), id);
+    return Number(result.changes) > 0;
+  }
+
   list(category?: MemoryCategory, includeInactive = false): MemoryRow[] {
     if (category) {
       const where = includeInactive ? "category = ?" : "category = ? AND status = 'active'";

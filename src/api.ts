@@ -38,6 +38,14 @@ export type ControlDeps = {
   /** Advisory path locks shared by fan-out children. */
   locks?: FileLockStore;
   /** Controlled self-modification: persona files and MCP server entries. */
+  /** 记忆库 CRUD：走运行时，保证同一时刻只有一个写者。 */
+  memory?: {
+    create: (input: { key: string; content: string; category?: string; importance?: number; thread?: string | null }) => { id?: number; status?: string };
+    update: (input: { id: number; content?: string; importance?: number }) => boolean;
+    remove: (input: { id: number }) => boolean;
+    list: (input: { limit?: number; category?: string }) => Array<Record<string, unknown>>;
+    get: (id: number) => Record<string, unknown> | undefined;
+  };
   proposals?: ProposalStore;
   log?: (message: string) => void;
   /** Persist an orchestration event. Without this, a run leaves no trace after the console scrolls. */
@@ -326,6 +334,62 @@ export function startControlServer(deps: ControlDeps, port = Number(process.env.
 
         // Dynamic orchestration: the runtime decides task by task instead of splitting once.
         // Same session binding and quota as the orchestrate path, because both speak to the user.
+        if (request.method === "POST" && url === "/memory") {
+          if (!deps.memory) {
+            json(response, 501, { error: "记忆 CRUD 未启用" });
+            return;
+          }
+          const body = await readJson(request);
+          const action = String(body.action ?? "");
+          try {
+            if (action === "create") {
+              const key = String(body.key ?? "").trim();
+              const content = String(body.content ?? "").trim();
+              if (!key || !content) {
+                json(response, 400, { error: "key 与 content 必填" });
+                return;
+              }
+              const result = deps.memory.create({
+                key,
+                content,
+                category: body.category ? String(body.category) : undefined,
+                importance: body.importance === undefined ? undefined : Number(body.importance),
+                thread: body.thread ? String(body.thread) : null,
+              });
+              json(response, 200, { ok: true, ...result });
+              return;
+            }
+            if (action === "update") {
+              const ok = deps.memory.update({
+                id: Number(body.id),
+                content: body.content === undefined ? undefined : String(body.content),
+                importance: body.importance === undefined ? undefined : Number(body.importance),
+              });
+              json(response, ok ? 200 : 404, { ok });
+              return;
+            }
+            if (action === "delete") {
+              const ok = deps.memory.remove({ id: Number(body.id) });
+              json(response, ok ? 200 : 404, { ok });
+              return;
+            }
+            if (action === "get") {
+              const row = deps.memory.get(Number(body.id));
+              json(response, row ? 200 : 404, { ok: Boolean(row), row });
+              return;
+            }
+            if (action === "list") {
+              const rows = deps.memory.list({ limit: Number(body.limit ?? 20), category: body.category ? String(body.category) : undefined });
+              json(response, 200, { ok: true, rows });
+              return;
+            }
+            json(response, 400, { error: "action 必须是 create/update/delete/get/list" });
+          } catch (error) {
+            json(response, 500, { error: error instanceof Error ? error.message : String(error) });
+          }
+          return;
+        }
+
         if (request.method === "POST" && url === "/orchestrate") {
           const body = await readJson(request);
           const goal = String(body.goal ?? "").trim();

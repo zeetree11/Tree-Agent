@@ -52,6 +52,27 @@ const EMBED_TOOL = {
   },
 };
 
+const CHANGE_TOOL = {
+  name: "memory_change",
+  description:
+    "对长期记忆做增删改查：create 新增、update 改内容或重要性、delete 撤销（标记 invalidated，不物理删除）、get 按 id 查、list 列最近若干条。" +
+    "写入由运行时执行，保证只有一个写者；从对话里自动提炼的记忆不需要这个工具。",
+  inputSchema: {
+    type: "object",
+    properties: {
+      action: { type: "string", enum: ["create", "update", "delete", "get", "list"] },
+      id: { type: "integer", description: "update / delete / get 时必填。" },
+      key: { type: "string", description: "create 时必填，稳定标识，如 user.city。" },
+      content: { type: "string", description: "create / update 时的内容。" },
+      category: { type: "string", enum: ["preference", "fact", "event"], description: "create 时用，默认 fact。" },
+      importance: { type: "integer", minimum: 1, maximum: 5, description: "可选，1–5。" },
+      limit: { type: "integer", minimum: 1, maximum: 100, description: "list 时返回条数，默认 20。" },
+    },
+    required: ["action"],
+    additionalProperties: false,
+  },
+};
+
 const TOOL = {
   name: "memory_search",
   description:
@@ -258,7 +279,23 @@ async function handle(message) {
     return;
   }
   if (method === "tools/list") {
-    reply(id, { tools: [TOOL, INDEX_TOOL, EMBED_TOOL] });
+    reply(id, { tools: [TOOL, CHANGE_TOOL] });
+    return;
+  }
+  if (method === "tools/call" && params?.name === CHANGE_TOOL.name) {
+    const args = params?.arguments ?? {};
+    try {
+      const response = await fetch(`http://127.0.0.1:${process.env.PI_RT_API_PORT ?? 8899}/memory`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(args),
+      });
+      const payload = await response.json().catch(() => ({}));
+      const text = payload.error ? `失败：${payload.error}` : JSON.stringify(payload);
+      reply(id, { content: [{ type: "text", text }], isError: !response.ok });
+    } catch (error) {
+      reply(id, { content: [{ type: "text", text: `记忆操作失败：${error.message}` }], isError: true });
+    }
     return;
   }
   if (method === "tools/call") {

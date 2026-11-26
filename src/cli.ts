@@ -1029,6 +1029,38 @@ async function cmdServe(args: string[]): Promise<number> {
     defaultThread: "orchestrate",
     log: (message) => dim(message),
     recordEvent: (type, payload) => store.appendEvent("", type, payload),
+    memory: {
+      create: ({ key, content, category, importance, thread }) =>
+        memory.apply({
+          action: "create",
+          target: { type: "self" },
+          category: (category as never) ?? "fact",
+          key,
+          content,
+          importance: importance ?? 3,
+          thread: thread ?? null,
+        }),
+      update: ({ id, content, importance }) => {
+        const row = memory.byId(id);
+        if (!row) return false;
+        let changed = false;
+        if (typeof content === "string" && content.trim()) changed = memory.setContent(id, content) || changed;
+        if (typeof importance === "number") changed = memory.setImportance(id, importance) || changed;
+        return changed;
+      },
+      remove: ({ id }) => memory.retire(id),
+      list: ({ limit = 20, category }) =>
+        memory.list(category as never, false).slice(0, Math.min(Math.max(limit, 1), 100)).map((row) => ({
+          id: row.id, key: row.key, content: row.content, category: row.category,
+          importance: row.importance, status: row.status, thread: row.thread, updatedAt: row.updated_at,
+        })),
+      get: (id) => {
+        const row = memory.byId(id);
+        return row
+          ? { id: row.id, key: row.key, content: row.content, category: row.category, importance: row.importance, status: row.status, thread: row.thread, updatedAt: row.updated_at }
+          : undefined;
+      },
+    },
     runChild: async ({ prompt, thread, index }) => {
       const childThread = `${thread}#sub${index}`;
       const childTask = store.createTask(prompt, cfg.workspace, childThread);
