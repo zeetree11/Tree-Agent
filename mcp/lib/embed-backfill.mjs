@@ -16,8 +16,6 @@
  *   freshly embedded row must be picked up. The content is unchanged; what changed is that the row
  *   is now searchable.
  */
-import { DatabaseSync } from "node:sqlite";
-
 export function missingEmbeddings(db, model, limit = 20) {
   return db
     .prepare(
@@ -67,8 +65,4 @@ export async function backfillEmbeddings({ db, embed, model, limit = 20, now = (
     }
   }
   return { filled, failed, remaining: countMissing(db, model) };
-}
-
-export function openDb(dbPath) {
-  return new DatabaseSync(dbPath);
 }
