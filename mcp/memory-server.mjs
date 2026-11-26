@@ -37,6 +37,21 @@ const INDEX_TOOL = {
   },
 };
 
+const EMBED_TOOL = {
+  name: "memory_embed",
+  description:
+    "给还没有向量的记忆补算 embedding（没有向量的记忆永远搜不到）。定时任务会自动补；这个工具用于手动触发或查看缺口。" +
+    "action=run 补一批（默认 20 条），action=status 只看还缺多少。",
+  inputSchema: {
+    type: "object",
+    properties: {
+      action: { type: "string", enum: ["run", "status"], description: "默认 status。" },
+      limit: { type: "integer", minimum: 1, maximum: 100, description: "这一批补多少条，默认 20。" },
+    },
+    additionalProperties: false,
+  },
+};
+
 const TOOL = {
   name: "memory_search",
   description:
@@ -243,10 +258,32 @@ async function handle(message) {
     return;
   }
   if (method === "tools/list") {
-    reply(id, { tools: [TOOL, INDEX_TOOL] });
+    reply(id, { tools: [TOOL, INDEX_TOOL, EMBED_TOOL] });
     return;
   }
   if (method === "tools/call") {
+    if (params?.name === EMBED_TOOL.name) {
+      const action = String(params?.arguments?.action ?? "status");
+      const limit = Math.min(Math.max(Number(params?.arguments?.limit ?? 20), 1), 100);
+      const db = openState(DB_PATH);
+      try {
+        const { backfillEmbeddings, countMissing } = await import("./lib/embed-backfill.mjs");
+        const { embedText } = await import("./lib/embed.mjs");
+        const model = process.env.EMBEDDING_MODEL ?? process.env.MEM0_EMBED_MODEL ?? "BAAI/bge-m3";
+        if (action === "status") {
+          reply(id, { content: [{ type: "text", text: `缺向量 ${countMissing(db, model)} 条（模型 ${model}）` }], isError: false });
+          return;
+        }
+        const result = await backfillEmbeddings({ db, embed: embedText, model, limit });
+        reply(id, { content: [{ type: "text", text: `补 ${result.filled} 条，失败 ${result.failed}，还剩 ${result.remaining} 条` }], isError: false });
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        reply(id, { content: [{ type: "text", text: `补向量失败：${reason}` }], isError: true });
+      } finally {
+        try { db.close(); } catch { /* 已关闭 */ }
+      }
+      return;
+    }
     if (params?.name === INDEX_TOOL.name) {
       const action = String(params?.arguments?.action ?? "status");
       const db = openState(DB_PATH);

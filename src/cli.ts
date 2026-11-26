@@ -1046,12 +1046,18 @@ async function cmdServe(args: string[]): Promise<number> {
     if (!(minutes > 0) || !qdrantUrl) return () => {};
     const { QdrantEngine, qdrantConfigFromEnv } = await import("../mcp/lib/qdrant-engine.mjs");
     const { openState, syncIndex } = await import("../mcp/lib/qdrant-index.mjs");
+    const { backfillEmbeddings } = await import("../mcp/lib/embed-backfill.mjs");
+    const { embedText } = await import("../mcp/lib/embed.mjs");
     const config = qdrantConfigFromEnv();
     if (!config) return () => {};
     const engine = new QdrantEngine(config);
     const tick = async () => {
       const db = openState(DB_PATH);
       try {
+        // 先补向量：没有向量的行既搜不到、也进不了索引。每批 20 条，避免一次打爆 embedding 接口。
+        const model = process.env.EMBEDDING_MODEL ?? config.model;
+        const filled = await backfillEmbeddings({ db, embed: embedText, model, limit: 20 });
+        if (filled.filled > 0) dim(`[向量] 补 ${filled.filled} 条，还剩 ${filled.remaining} 条`);
         const result = await syncIndex({ db, engine, collection: config.collection, dimension: config.dimension });
         if (result.synced > 0) dim(`[索引] 同步 ${result.synced} 条（水位 ${result.watermark}）`);
       } catch (error) {
