@@ -92,6 +92,19 @@ const engine = { upsertPoints: async (batch) => { points.push(...batch); return 
   check("manual watermark write works", pendingRows(db, "memories").length === 0);
 }
 
+// ── 维度不匹配的行必须跳过（真实故障：hash-256 混进 1024 的集合，Qdrant 直接 400）──
+{
+  points.length = 0;
+  const other = new DatabaseSync(path.join(dir, "other.db"));
+  other.exec("CREATE TABLE memories (id INTEGER PRIMARY KEY, key TEXT, content TEXT, subject TEXT, category TEXT, importance INTEGER, evidence_event_id INTEGER, updated_at TEXT, embedding BLOB, status TEXT)");
+  const tiny = Buffer.alloc(4 * 2);
+  other.prepare("INSERT INTO memories VALUES (1,'x','小向量',NULL,'fact',3,1,'2026-11-07T00:00:00Z',?,'active')").run(tiny);
+  const result = await syncIndex({ db: other, engine, collection: "c2", dimension: 3 });
+  check("wrong dimension skipped", result.synced === 0 && result.skipped === 1, JSON.stringify(result));
+  check("nothing sent for wrong dimension", points.length === 0);
+  other.close();
+}
+
 // ── BLOB 解码 ──────────────────────────────────────────────────────────────
 {
   const decoded = vectorFromBlob(vector(7));

@@ -1052,7 +1052,7 @@ async function cmdServe(args: string[]): Promise<number> {
     const tick = async () => {
       const db = openState(DB_PATH);
       try {
-        const result = await syncIndex({ db, engine, collection: config.collection });
+        const result = await syncIndex({ db, engine, collection: config.collection, dimension: config.dimension });
         if (result.synced > 0) dim(`[索引] 同步 ${result.synced} 条（水位 ${result.watermark}）`);
       } catch (error) {
         dim(`[索引] 同步失败：${(error as Error).message}`);

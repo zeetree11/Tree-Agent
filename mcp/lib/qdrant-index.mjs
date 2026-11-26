@@ -65,7 +65,7 @@ export function vectorFromBlob(blob) {
 /**
  * One incremental pass. Returns what happened so callers (tool and timer) can log the same shape.
  */
-export async function syncIndex({ db, engine, collection = DEFAULT_COLLECTION, limit = 500 }) {
+export async function syncIndex({ db, engine, collection = DEFAULT_COLLECTION, limit = 500, dimension = 0 }) {
   const rows = pendingRows(db, collection, limit);
   if (rows.length === 0) {
     return { synced: 0, skipped: 0, watermark: readWatermark(db, collection), reason: "已是最新" };
@@ -74,7 +74,9 @@ export async function syncIndex({ db, engine, collection = DEFAULT_COLLECTION, l
   let skipped = 0;
   for (const row of rows) {
     const vector = vectorFromBlob(row.embedding);
-    if (!vector) {
+    // A vector from another embedding space is not "close enough" — it is incomparable. Mixing them
+    // is what produced a 400 (expected dim 1024, got 256) on the first real sync.
+    if (!vector || (dimension > 0 && vector.length !== dimension)) {
       skipped += 1;
       continue;
     }

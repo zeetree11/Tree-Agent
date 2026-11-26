@@ -261,7 +261,7 @@ async function handle(message) {
           return;
         }
         const engine = new QdrantEngine(config);
-        const result = await syncIndex({ db, engine, collection: config.collection });
+        const result = await syncIndex({ db, engine, collection: config.collection, dimension: config.dimension });
         reply(id, { content: [{ type: "text", text: `同步 ${result.synced} 条，跳过 ${result.skipped} 条，水位 ${result.watermark}` }], isError: false });
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error);
