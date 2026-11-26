@@ -17,6 +17,7 @@
  */
 import { DatabaseSync } from "node:sqlite";
 import { blobToVector, cosine, embedText } from "./lib/embed.mjs";
+import { loadMem0, pickEngine } from "./lib/recall-engine.mjs";
 
 const PROTOCOL_VERSION = "2024-11-05";
 const DB_PATH = process.env.PI_RT_DB ?? "/data/runtime.db";
@@ -48,11 +49,66 @@ function openReadOnly() {
   }
 }
 
+/**
+ * mem0 path: replay active rows into Mem0 (it is a cache, SQLite is the truth), then search.
+ *
+ * Kept separate from the SQLite path on purpose — the two return different shapes of confidence
+ * (Mem0 scores are its own), and pretending otherwise would make the output silently incomparable.
+ */
+async function searchViaMem0(query, options = {}) {
+  const limit = Math.min(Math.max(Number(options.limit ?? 5), 1), 20);
+  const db = openReadOnly();
+  let rows;
+  try {
+    rows = db
+      .prepare(
+        `SELECT id, key, subject, category, content, evidence_event_id, evidence_quote,
+                importance, thread, updated_at
+           FROM memories WHERE status = 'active'`,
+      )
+      .all();
+  } finally {
+    try { db.close(); } catch { /* 已关闭 */ }
+  }
+  if (options.thread) rows = rows.filter((row) => !row.thread || row.thread === options.thread);
+
+  const { Mem0Engine, config } = await loadMem0();
+  const engine = new Mem0Engine(config);
+  await engine.sync(
+    rows.map((row) => ({
+      key: row.key,
+      content: row.content,
+      subject: row.subject,
+      category: row.category,
+      evidenceEventId: row.evidence_event_id,
+      updatedAt: row.updated_at,
+    })),
+  );
+
+  const hits = await engine.recall(query, limit);
+  if (hits.length === 0) {
+    return `记忆库里没有和「${query}」相关的内容（引擎 ${engine.describe()}）。`;
+  }
+  const byKey = new Map(rows.map((row) => [row.key, row]));
+  const lines = hits.map((hit) => {
+    const row = byKey.get(hit.key);
+    const quote = row?.evidence_quote ? `\n   证据 #${row.evidence_event_id}：「${row.evidence_quote}」` : "";
+    const who = row?.subject ? `${row.subject} · ` : "";
+    return `- [${who}${row?.category ?? "memory"}·${row?.importance ?? 3}] ${hit.text}（相关度 ${hit.score.toFixed(2)}）${quote}`;
+  });
+  return [`## 检索到的记忆（${lines.length} 条，引擎 ${engine.describe()}）`, ...lines].join("\n");
+}
+
 export async function searchMemory(query, options = {}) {
   const trimmed = String(query ?? "").trim();
   if (!trimmed) throw new Error("查询为空");
   if (trimmed.length > 300) throw new Error("查询过长（上限 300 字符）");
   const limit = Math.min(Math.max(Number(options.limit ?? 5), 1), 20);
+
+  const engine = pickEngine();
+  if (engine === "mem0") {
+    return searchViaMem0(trimmed, { limit, thread: options.thread });
+  }
 
   const { vector, model } = await embedText(trimmed);
   // bge-style models cluster higher than the hash fallback; one threshold cannot serve both.
