@@ -1037,6 +1037,35 @@ async function cmdServe(args: string[]): Promise<number> {
   });
   dim(`orchestrate API listening on 127.0.0.1:${control.port}`);
 
+  // Background indexer: keep the vector index current without waiting for a query.
+  // It is independent of the *search* engine on purpose — the index can be built while SQLite
+  // still answers, so switching later is a config change rather than a migration window.
+  const startIndexLoop = async () => {
+    const minutes = Number(process.env.PI_RT_INDEX_MINUTES ?? 30);
+    const qdrantUrl = process.env.MEM0_QDRANT_URL ?? process.env.QDRANT_URL;
+    if (!(minutes > 0) || !qdrantUrl) return () => {};
+    const { QdrantEngine, qdrantConfigFromEnv } = await import("../mcp/lib/qdrant-engine.mjs");
+    const { openState, syncIndex } = await import("../mcp/lib/qdrant-index.mjs");
+    const config = qdrantConfigFromEnv();
+    if (!config) return () => {};
+    const engine = new QdrantEngine(config);
+    const tick = async () => {
+      const db = openState(DB_PATH);
+      try {
+        const result = await syncIndex({ db, engine, collection: config.collection });
+        if (result.synced > 0) dim(`[索引] 同步 ${result.synced} 条（水位 ${result.watermark}）`);
+      } catch (error) {
+        dim(`[索引] 同步失败：${(error as Error).message}`);
+      } finally {
+        try { db.close(); } catch { /* 已关闭 */ }
+      }
+    };
+    void tick();
+    const timer = setInterval(() => void tick(), minutes * 60_000);
+    return () => clearInterval(timer);
+  };
+  const stopIndexLoop = await startIndexLoop().catch(() => () => {});
+
   // One handler for every transport: identity → event → run → reply → maybe distil.
   const interrupts = new InterruptRegistry();
 

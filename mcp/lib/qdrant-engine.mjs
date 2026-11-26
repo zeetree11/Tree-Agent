@@ -104,6 +104,14 @@ export class QdrantEngine {
     return points.length;
   }
 
+  /** Raw upsert for callers that already built points (incremental sync reads vectors from SQLite). */
+  async upsertPoints(points) {
+    if (points.length === 0) return 0;
+    await this.ensureCollection();
+    await this.request("PUT", `/collections/${this.config.collection}/points?wait=true`, { points });
+    return points.length;
+  }
+
   async recall(query, limit = 5) {
     await this.ensureCollection();
     const vector = await this.embed(query);

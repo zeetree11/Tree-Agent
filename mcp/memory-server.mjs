@@ -18,9 +18,24 @@
 import { DatabaseSync } from "node:sqlite";
 import { blobToVector, cosine, embedText } from "./lib/embed.mjs";
 import { loadMem0, loadQdrant, pickEngine } from "./lib/recall-engine.mjs";
+import { openState } from "./lib/qdrant-index.mjs";
 
 const PROTOCOL_VERSION = "2024-11-05";
 const DB_PATH = process.env.PI_RT_DB ?? "/data/runtime.db";
+
+const INDEX_TOOL = {
+  name: "memory_index",
+  description:
+    "把当前有效记忆增量写入向量索引（Qdrant）。默认由后台定时执行；这个工具用于手动触发或查看同步水位。" +
+    "action=sync 立即同步一次，action=status 只看水位不写。",
+  inputSchema: {
+    type: "object",
+    properties: {
+      action: { type: "string", enum: ["sync", "status"], description: "默认 status。" },
+    },
+    additionalProperties: false,
+  },
+};
 
 const TOOL = {
   name: "memory_search",
@@ -228,10 +243,34 @@ async function handle(message) {
     return;
   }
   if (method === "tools/list") {
-    reply(id, { tools: [TOOL] });
+    reply(id, { tools: [TOOL, INDEX_TOOL] });
     return;
   }
   if (method === "tools/call") {
+    if (params?.name === INDEX_TOOL.name) {
+      const action = String(params?.arguments?.action ?? "status");
+      const db = openState(DB_PATH);
+      try {
+        const { QdrantEngine, qdrantConfigFromEnv } = await import("./lib/qdrant-engine.mjs");
+        const { syncIndex, readWatermark } = await import("./lib/qdrant-index.mjs");
+        const config = qdrantConfigFromEnv();
+        if (!config) throw new Error("未配置 Qdrant（需要 MEM0_QDRANT_URL）");
+        if (action === "status") {
+          const mark = readWatermark(db, config.collection);
+          reply(id, { content: [{ type: "text", text: `collection=${config.collection} 水位=${mark || "（尚未同步）"}` }], isError: false });
+          return;
+        }
+        const engine = new QdrantEngine(config);
+        const result = await syncIndex({ db, engine, collection: config.collection });
+        reply(id, { content: [{ type: "text", text: `同步 ${result.synced} 条，跳过 ${result.skipped} 条，水位 ${result.watermark}` }], isError: false });
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        reply(id, { content: [{ type: "text", text: `索引同步失败：${reason}` }], isError: true });
+      } finally {
+        try { db.close(); } catch { /* 已关闭 */ }
+      }
+      return;
+    }
     if (params?.name !== TOOL.name) {
       fail(id, `未知工具：${params?.name}`);
       return;
