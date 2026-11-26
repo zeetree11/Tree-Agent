@@ -24,7 +24,7 @@ const PROTOCOL_VERSION = "2024-11-05";
 const DB_PATH = process.env.PI_RT_DB ?? "/data/runtime.db";
 
 const INDEX_TOOL = {
-  name: "memory_index",
+  name: "memory_sync_index",
   description:
     "把当前有效记忆增量写入向量索引（Qdrant）。默认由后台定时执行；这个工具用于手动触发或查看同步水位。" +
     "action=sync 立即同步一次，action=status 只看水位不写。",
@@ -38,7 +38,7 @@ const INDEX_TOOL = {
 };
 
 const EMBED_TOOL = {
-  name: "memory_embed",
+  name: "memory_backfill",
   description:
     "给还没有向量的记忆补算 embedding（没有向量的记忆永远搜不到）。定时任务会自动补；这个工具用于手动触发或查看缺口。" +
     "action=run 补一批（默认 20 条），action=status 只看还缺多少。",
