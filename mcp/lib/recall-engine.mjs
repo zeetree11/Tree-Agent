@@ -17,6 +17,7 @@ export const ENGINE_ENV = "PI_RT_MEMORY_ENGINE";
 /** `mem0` is the only opt-in; anything unrecognised stays on the safe default. */
 export function pickEngine(env = process.env) {
   const raw = String(env[ENGINE_ENV] ?? "").trim().toLowerCase();
+  if (raw === "qdrant") return "qdrant";
   if (raw === "mem0") return "mem0";
   if (raw === "" || raw === "sqlite") return "sqlite";
   throw new Error(`${ENGINE_ENV}=${raw} 不认识（可选 sqlite / mem0）`);
@@ -28,6 +29,13 @@ export function pickEngine(env = process.env) {
  * The module lives with the app source because it imports `mem0ai/oss` and resolves it from
  * /app/node_modules; the MCP server itself is mounted from the workspace.
  */
+export async function loadQdrant(env = process.env) {
+  const { QdrantEngine, qdrantConfigFromEnv } = await import("./qdrant-engine.mjs");
+  const config = qdrantConfigFromEnv(env);
+  if (!config) throw new Error("qdrant 引擎缺少配置：需要 MEM0_QDRANT_URL 或 QDRANT_URL");
+  return { QdrantEngine, config };
+}
+
 export async function loadMem0(env = process.env) {
   const target = env.PI_RT_MEM0_MODULE ?? "/app/src/mem0-engine.ts";
   const mod = await import(target);

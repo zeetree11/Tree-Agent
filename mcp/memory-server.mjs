@@ -17,7 +17,7 @@
  */
 import { DatabaseSync } from "node:sqlite";
 import { blobToVector, cosine, embedText } from "./lib/embed.mjs";
-import { loadMem0, pickEngine } from "./lib/recall-engine.mjs";
+import { loadMem0, loadQdrant, pickEngine } from "./lib/recall-engine.mjs";
 
 const PROTOCOL_VERSION = "2024-11-05";
 const DB_PATH = process.env.PI_RT_DB ?? "/data/runtime.db";
@@ -55,6 +55,47 @@ function openReadOnly() {
  * Kept separate from the SQLite path on purpose — the two return different shapes of confidence
  * (Mem0 scores are its own), and pretending otherwise would make the output silently incomparable.
  */
+/**
+ * Qdrant path: replay active rows into the collection (idempotent, keyed by row id), then search.
+ *
+ * Qdrant returns only what it indexed; the caller re-reads rows by id so evidence and status still
+ * come from SQLite. If the collection is lost, one replay rebuilds it — that is the whole point of
+ * keeping it a cache.
+ */
+async function searchViaQdrant(query, options = {}) {
+  const limit = Math.min(Math.max(Number(options.limit ?? 5), 1), 20);
+  const { embedText } = await import("./lib/embed.mjs");
+  const db = openReadOnly();
+  let rows;
+  try {
+    rows = db
+      .prepare(
+        `SELECT id, key, subject, category, content, evidence_event_id, evidence_quote,
+                importance, thread, updated_at
+           FROM memories WHERE status = 'active'`,
+      )
+      .all();
+  } finally {
+    try { db.close(); } catch { /* 已关闭 */ }
+  }
+  if (options.thread) rows = rows.filter((row) => !row.thread || row.thread === options.thread);
+
+  const { QdrantEngine, config } = await loadQdrant();
+  const engine = new QdrantEngine(config, { embed: async (text) => (await embedText(text)).vector });
+  await engine.sync(rows);
+
+  const hits = await engine.recall(query, limit);
+  if (hits.length === 0) return `记忆库里没有和「${query}」相关的内容（引擎 ${engine.describe()}）。`;
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const lines = hits.map((hit) => {
+    const row = byId.get(hit.id);
+    const quote = row?.evidence_quote ? `\n   证据 #${row.evidence_event_id}：「${row.evidence_quote}」` : "";
+    const who = row?.subject ? `${row.subject} · ` : "";
+    return `- [${who}${row?.category ?? "memory"}·${row?.importance ?? 3}] ${hit.text}（相关度 ${hit.score.toFixed(2)}）${quote}`;
+  });
+  return [`## 检索到的记忆（${lines.length} 条，引擎 ${engine.describe()}）`, ...lines].join("\n");
+}
+
 async function searchViaMem0(query, options = {}) {
   const limit = Math.min(Math.max(Number(options.limit ?? 5), 1), 20);
   const db = openReadOnly();
@@ -106,6 +147,9 @@ export async function searchMemory(query, options = {}) {
   const limit = Math.min(Math.max(Number(options.limit ?? 5), 1), 20);
 
   const engine = pickEngine();
+  if (engine === "qdrant") {
+    return searchViaQdrant(trimmed, { limit, thread: options.thread });
+  }
   if (engine === "mem0") {
     return searchViaMem0(trimmed, { limit, thread: options.thread });
   }
