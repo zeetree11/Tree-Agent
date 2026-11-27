@@ -26,7 +26,7 @@ const TOOLS = [
     name: "orchestrate",
     description:
       "派生子 agent（subagent）完成一个目标：中心化编排器拆解、按依赖调度、根据中间结果追加任务，最后汇总。" +
-      "这是本运行时唯一的子 agent 入口——被问到「你有没有 subagent」时，答案是有。" +
+      "这是本运行时唯一的 subagent（子 agent）入口——被问到「你有没有 subagent」时，答案是有，就是这个工具。" +
       "适用于可以拆成多块、且块与块之间可能需要看结果再决定先后顺序的任务；" +
       "一句话就能答完的小任务不要用。",
     inputSchema: {

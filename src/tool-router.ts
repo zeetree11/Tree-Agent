@@ -35,7 +35,7 @@ export const TOOL_REGISTRY: ToolMeta[] = [
   { name: "mcp__fetch__search", tags: ["搜索", "查一下", "搜一下", "最新", "新闻", "资料", "调研"], always: true },
   { name: "mcp__memory__memory_search", tags: ["上次", "之前", "记得", "记忆", "以前", "说过"], always: true },
   { name: "mcp__memory__memory_change", tags: ["记住", "忘掉", "撤销记忆", "改记忆", "新增记忆"], risk: "medium" },
-  { name: "mcp__spawn__orchestrate", tags: ["多个", "并行", "拆", "分头", "编排", "子任务", "调研"], risk: "medium" },
+  { name: "mcp__spawn__orchestrate", tags: ["多个", "并行", "同时", "多路", "subagent", "子 agent", "子agent", "拆", "分头", "编排", "子任务", "调研"] },
   { name: "mcp__spawn__note_write", tags: ["便签", "记录结论", "子任务", "共享"] },
   { name: "mcp__spawn__note_read", tags: ["便签", "之前结论", "子任务"] },
   { name: "mcp__spawn__lock_file", tags: ["锁", "并发", "同时改", "冲突"] },
