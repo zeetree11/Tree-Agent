@@ -19,6 +19,8 @@ export type PiRpcOptions = {
   cliPath: string;
   cwd: string;
   args: string[];
+  /** 允许的工具名白名单；为空表示不限制（回到旧行为）。 */
+  tools?: string[];
   env: Record<string, string | undefined>;
   /** Milliseconds to wait for a command response. */
   commandTimeoutMs?: number;
@@ -44,7 +46,7 @@ export class PiRpc extends EventEmitter {
   }
 
   start(): void {
-    this.child = spawn(process.execPath, [this.opts.cliPath, "--mode", "rpc", ...this.opts.args], {
+    this.child = spawn(process.execPath, [this.opts.cliPath, "--mode", "rpc", ...(this.opts.tools && this.opts.tools.length > 0 ? ["--tools", this.opts.tools.join(",")] : []), ...this.opts.args], {
       cwd: this.opts.cwd,
       // The caller builds the whole environment (see `piEnv`); inheriting `process.env` here
       // would undo the scrubbing that keeps credentials out of reach of a shell tool.

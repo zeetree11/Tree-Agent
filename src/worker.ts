@@ -1,4 +1,5 @@
 import path from "node:path";
+import { routeTools } from "./tool-router.ts";
 import { PiRpc } from "./rpc.ts";
 import type { RpcRecord } from "./rpc.ts";
 import type { Store, TaskRow } from "./db.ts";
@@ -214,10 +215,17 @@ async function runAttempt(
   precedenceText: string,
   attempt: number,
 ): Promise<string> {
+  // 工具路由：只把候选工具交给模型。PI_RT_TOOL_ROUTING=0 关闭，回到"全部工具"的旧行为。
+  const routed =
+    process.env.PI_RT_TOOL_ROUTING === "0"
+      ? null
+      : routeTools(task.prompt, { maxTools: Number(process.env.PI_RT_TOOL_MAX ?? 8) });
+
   const rpc = new PiRpc({
     cliPath: PI_CLI,
     cwd: task.cwd,
     args: piArgs(cfg),
+    tools: routed?.tools,
     env: piEnv(cfg),
     commandTimeoutMs: 120_000,
   });
