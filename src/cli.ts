@@ -1193,6 +1193,14 @@ async function cmdServe(args: string[]): Promise<number> {
     busy.add(result.thread);
     const taskId = store.createTask(message.text, cfg.workspace, result.thread);
     const running = interrupts.start(result.thread, taskId);
+    // 进度播报由宿主负责，不指望模型记得说：长任务里"安静"比"啰嗦"更糟。
+    const progressTimers = [8_000, 30_000, 90_000].map((at, index) =>
+      setTimeout(() => {
+        const text = ["收到，开始处理…", "还在处理（约 30 秒）…", "这一步比较久（约 90 秒），还在跑…"][index];
+        void send(message.chatId, text).catch(() => {});
+      }, at),
+    );
+    const clearProgress = () => progressTimers.forEach((timer) => clearTimeout(timer));
     let reply: string;
     try {
       reply = await runTask(
@@ -1287,6 +1295,7 @@ async function cmdServe(args: string[]): Promise<number> {
     } finally {
       // Both must be released: a leaked busy flag blocks new messages, a leaked interrupt entry
       // blocks the *next* task on this thread with a misleading "already running" error.
+      clearProgress();
       interrupts.finish(result.thread);
       busy.delete(result.thread);
     }
