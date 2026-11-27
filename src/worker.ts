@@ -221,11 +221,19 @@ async function runAttempt(
       ? null
       : routeTools(task.prompt, { maxTools: Number(process.env.PI_RT_TOOL_MAX ?? 8) });
 
+  // pi 自带 codemode：让模型写一段脚本批量调工具，只把结果带回对话。
+  // 默认关闭；PI_RT_CODEMODE=1 时叠加到候选集上（沙箱里能调的仍然是这批工具）。
+  const withCodemode = (tools?: string[]) => {
+    if (process.env.PI_RT_CODEMODE !== "1") return tools;
+    if (!tools) return ["codemode"];
+    return tools.includes("codemode") ? tools : [...tools, "codemode"];
+  };
+
   const rpc = new PiRpc({
     cliPath: PI_CLI,
     cwd: task.cwd,
     args: piArgs(cfg),
-    tools: routed?.tools,
+    tools: withCodemode(routed?.tools),
     env: piEnv(cfg),
     commandTimeoutMs: 120_000,
   });
